@@ -1,7 +1,7 @@
 NAS-NSA325-mod
 ==============
 
-A set of mods to completely replace Zyxell NSA-325/v2 NAS box firmware.
+A set of mods to completely replace Zyxel NSA-325/v2 NAS box firmware.
 
 
 Recommended read order:
