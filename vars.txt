@@ -1,0 +1,27 @@
+RFShddPATH=/root/nas/nsa325/rootfs
+RFShddCFG=$RFShddPATH/multistrap-hdd.cfg
+RFShdd=$RFShddPATH/rfshdd
+
+NASMAC=5C:F4:AB:40:5B:23
+NASIP=192.168.0.100
+NASGW=192.168.0.254
+NASHOSTNAME=nasivadaras.ivadaras.lan
+
+UBOOTWORKDIR=/root/nas/nsa325/uboot
+
+KERNELWORKDIR=/root/nas/nsa325/kernel
+KERNELCURRENT=linux-3.14.3
+
+NASINITRAMFS=/root/nas/nsa325/initramfs+root-ro
+NASINITRAMFSNAME="NSA-325-v2-Initramfs"
+
+#USB TEST:
+USBBOOTDEV=/dev/sdd1
+USBROOTDEV=/dev/sdd2
+
+USBBOOTMNT=$RFShddPATH/usb-boot
+USBROOTMNT=$RFShddPATH/usb-root
+
+USBTESTMNT=/mnt/usb_stick/
+
+
