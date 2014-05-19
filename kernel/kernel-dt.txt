@@ -1,0 +1,373 @@
+https://github.com/pkirchhofer/nsa325-kernel
+
+git clone linux-tree linux-git-nsa325
+cd linux-git-nsa325
+git remote add nsa325dt https://github.com/pkirchhofer/nsa325-kernel.git
+git fetch nsa325dt
+
+git checkout v3.11
+git checkout -b nsa325-v3.11
+
+
+git log nsa325dt/master|grep commit
+>	commit e2ebfd396ebc9c6db8d23ad41f1dfa0b22f22e0e
+>	commit 1c5f0a5bd05de912583a3cd448450bb74959c8f9
+>	commit 1766628ad327ef735316bf074d6c022507bd1328
+>	commit 83c8025f621099d1c70a433ac17a130b47d7c7b9
+>	commit 67ccb097bd30092b9eb2ec0e8cb02db11fafd471
+	commit 7d1bfc068c06f5dc69f97bf212a9bec86842a556
+	commit b22114a87ed9fd679931ac54ff8a95d5545351f9
+
+	
+#apply patches:
+
+git cherry-pick 67ccb097bd30092b9eb2ec0e8cb02db11fafd471
+git cherry-pick 83c8025f621099d1c70a433ac17a130b47d7c7b9
+git cherry-pick 1766628ad327ef735316bf074d6c022507bd1328
+git cherry-pick 1c5f0a5bd05de912583a3cd448450bb74959c8f9
+git cherry-pick e2ebfd396ebc9c6db8d23ad41f1dfa0b22f22e0e
+
+
+git rebase v3.14
+
+	First, rewinding head to replay your work on top of it...
+	Applying: First stab at NSA325 support (copy files from NSA310)
+	Using index info to reconstruct a base tree...
+	Falling back to patching base and 3-way merge...
+	Auto-merging arch/arm/mach-kirkwood/board-dt.c
+	CONFLICT (content): Merge conflict in arch/arm/mach-kirkwood/board-dt.c
+	Auto-merging arch/arm/boot/dts/Makefile
+	CONFLICT (content): Merge conflict in arch/arm/boot/dts/Makefile
+	Failed to merge in the changes.
+	Patch failed at 0001 First stab at NSA325 support (copy files from NSA310)
+
+	When you have resolved this problem run "git rebase --continue".
+	If you would prefer to skip this patch, instead run "git rebase --skip".
+	To check out the original branch and stop rebasing run "git rebase --abort".
+
+git status
+	# Not currently on any branch.
+	# Changes to be committed:
+	#   (use "git reset HEAD <file>..." to unstage)
+	#
+	#       new file:   arch/arm/boot/dts/kirkwood-nsa325.dts
+	#
+	# Unmerged paths:
+	#   (use "git reset HEAD <file>..." to unstage)
+	#   (use "git add/rm <file>..." as appropriate to mark resolution)
+	#
+	#       both modified:      arch/arm/boot/dts/Makefile
+	#       both modified:      arch/arm/mach-kirkwood/board-dt.c
+	#
+
+vi arch/arm/boot/dts/Makefile
+git add arch/arm/boot/dts/Makefile
+
+vi arch/arm/mach-kirkwood/board-dt.c
+git add arch/arm/mach-kirkwood/board-dt.c
+
+git rebase --continue
+
+
+and so on, till no more conflicts.
+
+# create new branch since we are now in v3.14 and delete v3.11 working branch
+git checkout -b nsa325-v3.14
+git branch -d nsa325-v3.11
+
+
+
+
+
+# CONFIGURE
+make distclean && make mrproper
+
+
+cat arch/arm/configs/kirkwood_defconfig - <<EOF > .config
+### MIMINAL HARDWARE CONFIG FOR ZYXEL NSA-325v2
+# System Type
+CONFIG_ARCH_KIRKWOOD_DT=y
+CONFIG_MACH_NSA325_DT=y
+USE_OF=y
+CONFIG_SERIAL_OF_PLATFORM=y
+# DTB-appended kernel for stock U-Boot
+CONFIG_ARM_APPENDED_DTB=y
+#CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_FROM_BOOTLOADER=y
+#CONFIG_ARM_ATAG_DTB_COMPAT=y
+# CPU Power Management
+CONFIG_CPU_FREQ=n
+CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+# Power Management
+CONFIG_SUSPEND=n
+CONFIG_PM_RUNTIME=n
+#
+CONFIG_ARCH_HAS_CPUFREQ=y
+CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+# NSA325 has just 512MB ram
+CONFIG_HIGHMEM=n
+# This is important otherwise you get "__nand_correct_data: uncorrectable ECC error__nand_correct_data: uncorrectable ECC error"
+CONFIG_MTD_BLOCK=n
+# sensors support
+CONFIG_I2C_GPIO=y
+CONFIG_I2C_MV64XXX=y
+CONFIG_HWMON=y
+CONFIG_SENSORS_GPIO_FAN=y
+CONFIG_SENSORS_LM75=y
+CONFIG_SENSORS_NSA3XX=y
+# Ethernet
+CONFIG_MV643XX_ETH=y
+# USB
+CONFIG_USB_SUPPORT=y
+CONFIG_USB=y
+CONFIG_USB_XHCI_HCD=y
+CONFIG_USB_EHCI_HCD=y
+CONFIG_USB_EHCI_HCD_ORION=y
+# RTC - MV seems broken, board will use PCF8563 instead
+CONFIG_RTC_DRV_MV=y
+CONFIG_RTC_DRV_PCF8563=y
+# other hardware
+CONFIG_ORION_WATCHDOG=y
+CONFIG_MV_XOR=y
+# initramfs support (to be able to use root=LABEL=)
+CONFIG_TMPFS=y
+CONFIG_BLK_DEV_INITRD=y
+# NetConsole support
+CONFIG_NETCONSOLE=m
+EOF
+
+
+
+cat <<EOF >>.config
+# No auto version label
+CONFIG_LOCALVERSION_AUTO=n
+# /proc/config.gz
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+# Prepends timings
+CONFIG_PRINTK_TIME=y
+EOF
+
+
+
+
+# addons from bodhi:
+ # FP emulator
+CONFIG_OABI_COMPAT + CONFIG_FPE_NWFPE
+oppure 
+CONFIG_FPE_FASTFPE
+
+# hw random generator
+CONFIG_HW_RANDOM
+
+ # CONFIG_UEVENT_HELPER_PATH
+ CONFIG_UEVENT_HELPER_PATH=""
+
+
+# Reduce Kernel size
+cat <<EOF >>.config
+# Unused archs/machs selected by default kirkwood config
+CONFIG_MACH_DLINK_KIRKWOOD_DT=n
+CONFIG_MACH_NET2BIG_V2=n
+CONFIG_MACH_NET5BIG_V2=n
+CONFIG_MACH_OPENRD_BASE=n
+CONFIG_MACH_OPENRD_CLIENT=n
+CONFIG_MACH_OPENRD_ULTIMATE=n
+CONFIG_MACH_RD88F6192_NAS=n
+CONFIG_MACH_RD88F6281=n
+CONFIG_MACH_T5325=n
+CONFIG_MACH_TS219=n
+CONFIG_MACH_TS41X=n
+CONFIG_MACH_D2NET_V2=n
+CONFIG_MACH_MV88F6281GTW_GE_DT=n
+# Unused sensors selected by default kirkwood config
+CONFIG_SENSORS_ADT7475=n
+CONFIG_SENSORS_LM63=n
+CONFIG_SENSORS_LM85=n
+## Unused Device Drivers 
+CONFIG_BLK_DEV_SR=n
+# Device Drivers / LED Support
+CONFIG_LEDS_NS2=n
+CONFIG_LEDS_NETXBIG=n
+# Device Drivers / Real Time Clock
+CONFIG_RTC_DRV_RS5C372=n
+CONFIG_RTC_DRV_S35390A=n
+CONFIG_RTC_DRV_S35390A=n
+# Device Drivers / Network device support / Ethernet driver support
+# These are not wifi devices
+CONFIG_NET_VENDOR_3COM=n
+CONFIG_NET_VENDOR_ADAPTEC=n
+CONFIG_NET_VENDOR_ALTEON=n
+CONFIG_NET_VENDOR_AMD=n
+CONFIG_NET_VENDOR_ARC=n
+CONFIG_NET_VENDOR_ATHEROS=n
+CONFIG_NET_CADENCE=n
+CONFIG_NET_VENDOR_BROADCOM=n
+CONFIG_NET_VENDOR_BROCADE=n
+CONFIG_NET_VENDOR_CHELSIO=n
+CONFIG_NET_VENDOR_CIRRUS=n
+CONFIG_NET_VENDOR_CISCO=n
+CONFIG_NET_VENDOR_DEC=n
+CONFIG_NET_VENDOR_DLINK=n
+CONFIG_NET_VENDOR_EMULEX=n
+CONFIG_NET_VENDOR_EXAR=n
+CONFIG_NET_VENDOR_FARADAY=n
+CONFIG_NET_VENDOR_HP=n
+CONFIG_NET_VENDOR_INTEL=n
+CONFIG_NET_VENDOR_MELLANOX=n
+CONFIG_NET_VENDOR_MICREL=n
+CONFIG_NET_VENDOR_MICROCHIP=n
+CONFIG_NET_VENDOR_MYRI=n
+CONFIG_NET_VENDOR_NATSEMI=n
+CONFIG_NET_VENDOR_NVIDIA=n
+CONFIG_NET_VENDOR_OKI=n
+CONFIG_NET_PACKET_ENGINE=n
+CONFIG_NET_VENDOR_QLOGIC=n
+CONFIG_NET_VENDOR_REALTEK=n
+CONFIG_NET_VENDOR_RDC=n
+CONFIG_NET_VENDOR_SEEQ=n
+CONFIG_NET_VENDOR_SILAN=n
+CONFIG_NET_VENDOR_SIS=n
+CONFIG_NET_VENDOR_SMSC=n
+CONFIG_NET_VENDOR_STMICRO=n
+CONFIG_NET_VENDOR_SUN=n
+CONFIG_NET_VENDOR_TEHUTI=n
+CONFIG_NET_VENDOR_TI=n
+CONFIG_NET_VENDOR_VIA=n
+CONFIG_NET_VENDOR_WIZNET=n
+EOF
+
+
+
+
+cat <<EOF >>.config
+# Disk Partitions
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_EFI_PARTITION=y
+CONFIG_LDM_PARTITION=y
+CONFIG_MAC_PARTITION=y
+# Filesystems support
+CONFIG_EXT2_FS=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT4_FS=y
+CONFIG_XFS_FS=m
+CONFIG_FUSE_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=y
+CONFIG_NTFS_FS=y
+CONFIG_NTFS_RW=y
+CONFIG_JFFS2_FS=m
+CONFIG_HFS_FS=y
+CONFIG_HFSPLUS_FS=y
+EOF
+
+
+cat <<EOF >>.config
+# Disk Managers - MD
+CONFIG_MD=y
+CONFIG_MD_AUTODETECT=y
+CONFIG_BLK_DEV_MD=y
+CONFIG_MD_LINEAR=y
+CONFIG_MD_RAID0=y
+CONFIG_MD_RAID1=y
+# Disk Managers - LVM
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_THIN_PROVISIONING=m
+CONFIG_DM_MIRROR=n
+CONFIG_DM_RAID=n
+CONFIG_DM_UEVENT=y
+EOF
+
+
+
+
+cat <<EOF >>.config
+# OpenVPN/IPSEC support
+CONFIG_TUN=m
+CONFIG_L2TP=m
+CONFIG_INET_AH=m
+CONFIG_INET_ESP=m
+EOF
+
+
+cat <<EOF >>.config
+# Example of a WiFi Dongle: DLINK DWL-G122 rev C1 USB
+CONFIG_RT2X00=y
+CONFIG_RT73USB=y
+EOF
+
+
+# BLUETOOTH + SOUND SUPPORT
+cat <<EOF >>.config
+# SOUND SUPPORT
+CONFIG_SOUND=m
+CONFIG_SND=m
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_HRTIMER=m
+CONFIG_SND_SEQ_HRTIMER_DEFAULT=y
+CONFIG_SND_DYNAMIC_MINORS=y
+CONFIG_SND_MAX_CARDS=4
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_DRIVERS=y
+# BLUETOOTH SUPPORT
+CONFIG_BT=m
+CONFIG_BT_RFCOMM=m
+CONFIG_BT_RFCOMM_TTY=y
+CONFIG_BT_BNEP=m
+CONFIG_BT_BNEP_MC_FILTER=y
+CONFIG_BT_BNEP_PROTO_FILTER=y
+CONFIG_BT_HIDP=m
+CONFIG_BT_HCIBTUSB=m
+CONFIG_BT_HCIBTSDIO=m
+CONFIG_BT_HCIUART=m
+CONFIG_BT_HCIUART_H4=y
+CONFIG_BT_HCIUART_BCSP=y
+CONFIG_BT_HCIUART_ATH3K=y
+CONFIG_BT_HCIUART_LL=y
+CONFIG_BT_HCIUART_3WIRE=y
+CONFIG_BT_HCIBCM203X=m
+CONFIG_BT_HCIBPA10X=m
+CONFIG_BT_HCIBFUSB=m
+CONFIG_BT_HCIVHCI=m
+CONFIG_BT_MRVL=m
+CONFIG_BT_MRVL_SDIO=m
+CONFIG_BT_ATH3K=m
+EOF
+
+
+
+# Further reduce Kernel size
+cat <<EOF >>.config
+# # Reduce kernel size not compiling unused stuff
+# General setup section
+CONFIG_PROFILING=n
+CONFIG_KPROBES=n
+# Kernel Hacking section
+CONFIG_DEBUG_KERNEL=n
+CONFIG_DEBUG_FS=n
+CONFIG_FTRACE=n
+CONFIG_UNUSED_SYMBOLS=n
+CONFIG_STRIP_ASM_SYMS=y
+# Security section
+CONFIG_SECURITY=n
+CONFIG_SECURITY_SELINUX=n
+CONFIG_SECURITY_TOMOYO=n
+CONFIG_SECURITY_APPARMOR=n
+EOF
+
+
+
+
+
+make menuconfig
+
+make -j8 zImage modules kirkwood-nsa325.dtb
+
+cat arch/arm/boot/dts/kirkwood-nsa325.dtb >> arch/arm/boot/zImage
+make uImage
+
+
+
