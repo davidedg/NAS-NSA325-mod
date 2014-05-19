@@ -1,0 +1,113 @@
+
+Via serial console, interrupt u-boot sequence.
+
+
+######################################################
+ORIGINAL STOCK U-BOOT ENVIRONMENT IS: 
+######################################################
+bootargs=console=ttyS0,115200 mtdparts=nand_mtd:0x100000(uboot),0x80000(uboot_env),0x80000(key_store),0x80000(info),0xA00000(etc),0xA00000(kernel_1),0x2FC0000(rootfs1),0xA00000(kernel_2),0x2FC0000(rootfs2) root=/dev/nfs rw init=/init
+bootcmd=nand read.e 0x2000000 $(kernel_addr) 0xA00000; bootm 0x2000000
+bootdelay=2
+baudrate=115200
+loads_echo=0
+ipaddr=10.4.52.165
+serverip=10.4.52.7
+rootpath=/srv/ubuntu
+netmask=255.255.255.0
+nandEcc=1bit
+MODEL_ID=AE03
+PRODUCT_NAME=NSA-325v2
+FEATURE_BIT=00
+CONTRY_TYPE=FF
+VENDOR_NAME=MitraStar Technology Corp.
+run_diag=yes
+ethaddr=5C:F4:AB:40:5B:23
+arcNumber=4495
+console=console=ttyS0,115200 mtdparts=nand_mtd:0xc0000@0(uboot)ro,0x7f00000@0x100000(root)
+ethprime=egiga0
+bootargs_root=root=/dev/nfs rw
+bootargs_end=:::orion:eth0:none
+image_name=uImage
+standalone=fsload 0x2000000 $(image_name);setenv bootargs $(console) root=/dev/mtdblock0 rw ip=$(ipaddr):$(serverip)$(bootargs_end) $(mvPhoneConfig); bootm 0x2000000;
+lcd0_enable=0
+lcd0_params=640x480-16@60
+ethmtu=1500
+mvPhoneConfig=mv_phone_config=dev[0]:fxs,dev[1]:fxo
+mvNetConfig=mv_net_config=(00:11:88:0f:62:81,0:1:2:3),mtu=1500
+usb0Mode=host
+yuk_ethaddr=00:00:00:EE:51:81
+netretry=no
+rcvrip=169.254.100.100
+loadaddr=0x02000000
+autoload=no
+image_multi=yes
+ethact=egiga0
+stdin=serial
+stdout=serial
+stderr=serial
+mainlineLinux=no
+enaMonExt=no
+enaCpuStream=no
+enaWrAllo=no
+pexMode=RC
+disL2Cache=no
+setL2CacheWT=yes
+disL2Prefetch=yes
+enaICPref=yes
+enaDCPref=yes
+sata_dma_mode=yes
+netbsd_en=no
+vxworks_en=no
+disaMvPnp=no
+enaAutoRecovery=yes
+; kernel_addr=0xc80000 ; this is variable (physical position of kernel on nand)
+pcieTune=no
+pcieTune1=no
+######################################################
+######################################################
+
+
+
+
+NEW U-BOOT ENVIRONMENT:
+################################
+
+setenv usb_wakeup mw.l f1010100 0020c000
+setenv uInitramfsAddr 0x01100000
+setenv arcNumber 4495
+setenv bootcmd_stock 'nand read.e 0x2000000 $(kernel_addr) 0xA00000; bootm 0x2000000'
+
+setenv bootargs_usb 'console=ttyS0,115200 usb-storage.delay_use=0 rootdelay=10 mtdparts=nand_mtd:0x100000(uboot),0x80000(uboot_env),0x80000(key_store),0x80000(info),0xA00000(etc),0xA00000(kernel_1),0x2FC0000(rootfs1),0xA00000(kernel_2),0x2FC0000(rootfs2) root=LABEL=usb-root'
+setenv bootargs_stock 'console=ttyS0,115200 mtdparts=nand_mtd:0x100000(uboot),0x80000(uboot_env),0x80000(key_store),0x80000(info),0xA00000(etc),0xA00000(kernel_1),0x2FC0000(rootfs1),0xA00000(kernel_2),0x2FC0000(rootfs2) root=/dev/nfs rw init=/init'
+
+setenv boot_stock 'setenv bootargs $(bootargs_stock); run bootcmd_stock'
+setenv boot_usb 'setenv bootargs $(bootargs_usb); run usb_wakeup; usb reset; ext2load usb 0:1 ${loadaddr} /boot/uImage; ext2load usb 0:1 ${uInitramfsAddr} /boot/uInitramfs; bootm $(loadaddr) $(uInitramfsAddr)'
+
+setenv switchboot_stock 'echo SWITCHING NEXT BOOT TO STOCK FIRMWARE...; setenv mainlineLinux no; setenv bootcmd 'run boot_stock'; saveenv; reset'
+setenv switchboot_usb 'echo SWITCHING NEXT BOOT TO USB DEVICE...; setenv mainlineLinux yes; setenv bootcmd 'run boot_usb'; saveenv; reset'
+
+
+
+################################
+
+# switch to new boot:
+run switchboot_usb
+
+
+################################
+
+# To switch back to STOCK from within Debian:
+fw_setenv bootcmd run switchboot_stock
+
+
+# To switch back to Debian from within STOCK (ex. in TELNET)
+fw_setenv bootcmd run switchboot_usb
+
+
+
+
+
+
+
+
+
