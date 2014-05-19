@@ -1,0 +1,57 @@
+# -*- shell-script -*-
+
+panic()
+{
+	if command -v chvt >/dev/null 2>&1; then
+		chvt 1
+	fi
+
+	echo "$@"
+	# Disallow console access
+	if [ -n "${panic}" ]; then
+		echo "PANIC: Rebooting automatically due to panic= boot argument"
+		sleep ${panic}
+		reboot
+	fi
+	REASON="$@" PS1='(initramfs) ' /bin/sh -i </dev/console >/dev/console 2>&1
+}
+
+maybe_break()
+{
+	if [ "${break:-}" = "$1" ]; then
+		panic "PANIC: Spawning shell within the initramfs"
+	fi
+}
+
+run_scripts()
+{
+    for SCRIPT in ${1}/*
+    do
+        if [ -f $SCRIPT -a -x $SCRIPT ]
+        then
+            echo "${MSGTAG_INITRAMFS}: calling: ${SCRIPT}"
+            $SCRIPT
+        fi
+    done
+}
+
+
+
+# Load custom modules first
+load_modules()
+{
+	if [ -e /conf/modules ]; then
+		cat /conf/modules | while read m; do
+			# Skip empty lines
+			if [ -z "$m" ];  then
+				continue
+			fi
+			# Skip comments - dash removes whitespace prefix
+			com=$(printf "%.1s" "${m}")
+			if [ "$com" = "#" ]; then
+				continue
+			fi
+			modprobe $m
+		done
+	fi
+}

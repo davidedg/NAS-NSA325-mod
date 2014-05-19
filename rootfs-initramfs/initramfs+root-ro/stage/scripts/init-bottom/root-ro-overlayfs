@@ -1,0 +1,208 @@
+#!/bin/sh
+# To preserve NAND life, mount / as an overlayfs volume of:
+# -lowerdir = real root on NAND, mounted read-only.
+# -upperdir = tmpfs volume.
+#
+# To make NAND writeable:
+#
+#   * option 1: kernel boot parameter "disable-root-ro=true"
+#   * option 2: create file "disable-root-ro" under real root
+#
+
+MSGTAG="OVERLAYFS"
+DISABLE_MAGIC_FILE="/disable-root-ro"
+
+echo "${MSGTAG}: initializing..."
+
+. /scripts/functions
+
+if [ -z ${ROOT} ]; then
+    echo "${MSGTAG}: ROOT environment variable not set (check exports)"
+    exit 0
+fi
+
+# parse kernel boot command line 
+DISABLE_ROOT_RO=
+for CMD_PARAM in $(cat /proc/cmdline); do 
+    case ${CMD_PARAM} in 
+        disable-root-ro=*)
+            DISABLE_ROOT_RO=${CMD_PARAM#disable-root-ro=}
+            ;;
+    esac
+done
+
+
+
+# check if read-only root fs is disabled
+if [ ! -z "${DISABLE_ROOT_RO}" ]; then
+    echo "${MSGTAG}: disabled, found boot parameter disable-root-ro=${DISABLE_ROOT_RO}"
+    exit 0
+fi
+if [ -e "${rootmnt}${DISABLE_MAGIC_FILE}" ]; then
+    echo "${MSGTAG}: disabled, found file ${rootmnt}${DISABLE_MAGIC_FILE}"
+    exit 0
+fi
+
+# generic settings 
+# ${ROOT} and ${rootmnt} are predefined by caller of this script. Note that
+# the root fs ${rootmnt} it mounted readonly on the initrams, which fits nicely
+# for our purposes.
+ROOT_RW=/mnt/root-rw
+ROOT_RO=/mnt/root-ro
+MOUNT_PARMS="-t overlayfs -o lowerdir=${ROOT_RO},upperdir=${ROOT_RW} overlayfs-root ${rootmnt}"
+
+
+
+maybe_break overlayfs-modprobe
+
+# Check that overlayfs is active (module/compiled-in):
+if [ ""  = "$(grep -m1 overlayfs /proc/filesystems)" ]; then
+
+    # Try load OverlayFS module
+    modprobe -qb overlayfs
+
+    # Check if that overlayfs is active (either via module or built-in):
+    if [ ""  = "$(grep -m1 overlayfs /proc/filesystems)" ]; then
+        echo "$MSGTAG: OVERLAYFS kernel functionality is missing."
+        modprobe -r -q overlayfs
+        exit 0
+    fi
+fi
+
+
+
+# make the mount point on the init root fs ${ROOT_RW}
+[ -d ${ROOT_RW} ] || mkdir -p ${ROOT_RW}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to create ${ROOT_RW}"
+    exit 0
+fi
+
+# make the mount point on the init root fs ${ROOT_RO}
+[ -d ${ROOT_RO} ] || mkdir -p ${ROOT_RO}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to create ${ROOT_RO}"
+    exit 0
+fi
+
+# mount a tempfs using the device name tmpfs-root at ${ROOT_RW}
+mount -t tmpfs tmpfs-root ${ROOT_RW}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to create tmpfs"
+    exit 0
+fi
+
+
+maybe_break overlayfs-moverootro
+
+# root is mounted on ${rootmnt}, move it to ${ROOT_RO}.
+mount --move ${rootmnt} ${ROOT_RO}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to move root away from ${rootmnt} to ${ROOT_RO}"
+    exit 0
+fi
+
+# there is nothing left at ${rootmnt} now. So for any error we get we should
+# either do recovery to restore ${rootmnt} for drop to a initramfs shell using
+# "panic". Otherwise the boot process is very likely to fail with even more 
+# errors and leave the system in a wired state. 
+
+
+maybe_break overlayfs-mount
+
+# mount virtual fs ${rootmnt} with rw-fs ${ROOT_RW} on top or ro-fs ${ROOT_RO}.
+mount ${MOUNT_PARMS}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to create new ro/rw layered ${rootmnt}"
+    # do recovery and try resoring the mount for ${rootmnt}
+    mount --move ${ROOT_RO} ${rootmnt}
+    if [ $? -ne 0 ]; then
+       # exit to shell to let the user try fixing this
+        panic "${MSGTAG}: RECOVERY ERROR: failed to move ${ROOT_RO} back to ${rootmnt}"
+    fi
+    exit 0
+fi
+
+# now the real root fs is on ${ROOT_RO} of the init file system, our layered
+# root fs is set up at ${rootmnt}. So we can write anywhere in {rootmnt} and the
+# changes will end up in ${ROOT_RW} while ${ROOT_RO} it not touched. However 
+# ${ROOT_RO} and ${ROOT_RW} are on the initramfs root fs, which will be removed
+# an replaced by ${rootmnt}. Thus we must move ${ROOT_RO} and ${ROOT_RW} to the
+# rootfs visible later, ie. ${rootmnt}${ROOT_RO} and ${rootmnt}${ROOT_RO}.
+# Since the layered ro/rw is already up, these changes also end up on 
+# ${ROOT_RW} while ${ROOT_RO} is not touched.
+
+
+maybe_break overlayfs-moverootro2
+
+# move mount from ${ROOT_RO} to ${rootmnt}${ROOT_RO} 
+[ -d ${rootmnt}${ROOT_RO} ] || mkdir -p ${rootmnt}${ROOT_RO}
+mount --move ${ROOT_RO} ${rootmnt}${ROOT_RO}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to move ${ROOT_RO} to ${rootmnt}${ROOT_RO}"
+    exit 0
+fi
+
+
+maybe_break overlayfs-moverootrw
+
+# move mount from ${ROOT_RW} to ${rootmnt}${ROOT_RW} 
+[ -d ${rootmnt}${ROOT_RW} ] || mkdir -p ${rootmnt}${ROOT_RW}
+mount --move ${ROOT_RW} ${rootmnt}${ROOT_RW}
+if [ $? -ne 0 ]; then
+    echo "${MSGTAG}: ERROR: failed to move ${ROOT_RW} to ${rootmnt}${ROOT_RW}"
+    exit 0
+fi
+
+# technically, everything is set up nicely now. Since ${rootmnt} had beend 
+# mounted read-only on the initfamfs already, ${rootmnt}${ROOT_RO} is it, too.
+# Now we init process could run - but unfortunately, we may have to prepare 
+# some more things here. 
+# Basically, there are two ways to deal with the read-only root fs. If the 
+# system is made aware of this, things can be simplified a lot.
+# If it is not, things need to be done to our best knowledge. 
+#
+# So we assume here, the system does not really know about our read-only root fs.
+#
+# Let's deal with /etc/fstab first. It usually contains an entry for the root 
+# fs, which is no longer valid now. We have to remove it and add our new 
+# ${ROOT_RO} entry. 
+# Remember we are still on the initramfs root fs here, so we have to work on
+# ${rootmnt}/etc/fstab. The original fstab is ${rootmnt}${ROOT_RO}/etc/fstab.
+
+
+maybe_break overlayfs-fstab
+
+ROOT_TYPE=$(grep ${ROOT} /proc/mounts | cut -d' ' -f3)
+ROOT_OPTIONS=$(grep ${ROOT} /proc/mounts | cut -d' ' -f4)
+cat <<END >${rootmnt}/etc/fstab
+#
+#  This fstab is in RAM, the real one can be found at ${ROOT_RO}/etc/fstab
+#  The original entry for '/' and all swap files have been removed.  The new 
+#  entry for the read-only the real root fs follows. Write access can be 
+#  enabled using:
+#    sudo mount -o remount,rw ${ROOT_RO}
+#  re-mounting it read-only is done using:
+#    sudo mount -o remount,ro ${ROOT_RO}
+#
+
+${ROOT} ${ROOT_RO} ${ROOT_TYPE} ${ROOT_OPTIONS} 0 0
+
+#
+#  remaining entries from the original ${ROOT_RO}/etc/fstab follow.
+#
+END
+if [ $? -ne 0 ]; then
+    panic "${MSGTAG}: ERROR: failed to modify /etc/fstab (step 1)"
+fi
+
+#remove root entry from fstab
+grep -v ' / ' ${rootmnt}${ROOT_RO}/etc/fstab>>${rootmnt}/etc/fstab
+if [ $? -ne 0 ]; then
+    panic "${MSGTAG}: ERROR: failed to modify etc/fstab (step 2)"
+fi
+
+
+echo "${MSGTAG}: sucessfully set up."
+
+exit 0

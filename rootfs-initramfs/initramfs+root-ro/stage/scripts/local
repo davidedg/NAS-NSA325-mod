@@ -1,0 +1,99 @@
+
+pre_mountroot()
+{
+	run_scripts /scripts/local-top
+
+	# Load ubi with the correct MTD partition and return since fstype
+	# doesn't work with a char device like ubi.
+	if [ "${UBIMTD}empty" != "empty" ]; then
+		if [ ""  = "$(/bin/grep -m1 ubifs /proc/filesystems)" ]; then
+			echo "${MSGTAG_INITRAMFS}: UBIFS support not loaded, please consider building kernel with"
+			echo "${MSGTAG_INITRAMFS}: CONFIG_MTD_UBI=y and CONFIG_UBIFS_FS=y"
+			ecgi "Modprobing module ubi"
+			modprobe ubi mtd=${UBIMTD}
+			sleep 3
+		fi
+
+		if [ ! -e /dev/ubi0 ]; then
+			echo "${MSGTAG_INITRAMFS}: /dev/ubi0 not found, will try ubiattach"
+			[ -x $(which ubiattach) ] || panic "${MSGTAG_INITRAMFS}: ubiattach not found."
+			ubiattach -m ${UBIMTD} /dev/ubi_ctrl
+			sleep 3
+		fi
+
+		ROOTFSTYPE=ubifs
+		ROOT=ubi0:${ROOT}
+		return
+	fi
+
+	# If the root device hasn't shown up yet, give it a little while
+	# to deal with removable devices
+	if [ ! -e "${ROOT}" ]; then
+
+		sleepcounter=${ROOTDELAY}
+
+		echo "${MSGTAG_INITRAMFS}: waiting ${sleepcounter} sec. for root device"
+
+		while [ -z "${ROOT}" ]; do
+			/bin/sleep 1.0
+			sleepcounter=$(( ${sleepcounter} - 1 ))
+
+			# try to rediscover devices
+			mdev -s
+			for x in $(cat /proc/cmdline); do
+				case $x in
+				root=*)
+					ROOT=${x#root=}
+					case $ROOT in
+					LABEL=*)
+						ROOT="${ROOT#LABEL=}"
+						# support any "/" in LABEL= path (escape to \x2f)
+						case "${ROOT}" in
+						*/*)
+							ROOT="$(echo ${ROOT} | sed 's,/,\\x2f,g')"
+						esac
+						ROOT=$(findfs LABEL=$ROOT)
+						;;
+					UUID=*)
+						ROOT=$(findfs UUID=${ROOT#UUID=})
+						;;
+					/dev/nfs)
+						[ -z "${BOOT}" ] && BOOT=nfs
+						;;
+					esac
+					;;
+				esac
+			done
+			[ ${sleepcounter} -gt 0 ] || break
+			[ -e "${ROOT}" ] || echo "${MSGTAG_INITRAMFS}: will wait ${sleepcounter} sec. for root device, no success so far"
+		done
+	fi
+
+	# If root device still not present, panic to let user try fix it
+	while [ -z "${ROOT}" ]; do
+		echo " ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~- "
+		echo "${MSGTAG_INITRAMFS}: ERROR: cannot find root device, please manually set it:"
+		echo "${MSGTAG_INITRAMFS}: e.g.: echo /dev/sdb2>/manualroot"
+		panic "${MSGTAG_INITRAMFS}: ERROR: cannot find root device.  Dropping to a shell!"
+		[ -r /manualroot ] && ROOT=$(cat /manualroot 2>&1)
+	done
+}
+
+mountroot()
+{
+	pre_mountroot
+
+	run_scripts /scripts/local-premount
+
+	# Mount root
+	if [ -z "${ROOTFSTYPE}" ]; then
+		mount ${roflag} ${ROOTFLAGS} ${ROOT} ${rootmnt}
+	else
+		if [ ""  = "$(/bin/grep -m1 ${ROOTFSTYPE} /proc/filesystems)" ]; then
+			modprobe ${ROOTFSTYPE}
+		fi
+		mount ${roflag} -t ${ROOTFSTYPE} ${ROOTFLAGS} ${ROOT} ${rootmnt}
+	fi
+
+	run_scripts /scripts/local-bottom
+}
