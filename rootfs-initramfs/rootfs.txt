@@ -1,0 +1,438 @@
+***************************************************
+USE THE "vars.txt" commands to prepare the environment variables we will use.
+***************************************************
+
+##################################################
+# Introduction
+##################################################
+
+The new kernel will need a rootfs to bootstrap.
+For the HDD and USB version, I chose a standard Debian 7 installation, with minimal packages.
+For the NAND version, the packages selection is smaller and I used EMDEBIAN to reduce to the bone the size.
+
+I used multistrap (as opposed to debootstrap) because it's the preferred way for EMDEBIAN.
+While doing tests, I used a local caching proxy (squid), to avoid downloading again and again.
+
+For 2-nd stage part, I used QEMU emulation (On Debian, the needed package is qemu-user-static).
+
+#todo: rimosso mountall, forse ?
+##################################################
+# MULTISTRAP config file
+##################################################
+
+mkdir -p $RFShddPATH
+cd $RFShddPATH
+
+
+# multistrap-hdd.conf
+####################################################################################
+cat <<END > $RFShddCFG
+[General]
+arch=armel
+noauth=true
+unpack=true
+debootstrap=wheezy wheezy-updates wheezy-security
+aptsources=wheezy wheezy-updates wheezy-security
+cleanup=true
+
+[wheezy]
+packages=udev kmod mtd-utils evtest usbutils xfsprogs parted gdisk esekeyd u-boot-tools cpio klibc-utils makedev procps psmisc less apt aptitude dialog netbase net-tools ethtool ifupdown iproute iptables pump iputils-ping dropbear rsyslog ntpdate vim-tiny mc htop nmon locales wget bash-completion screen
+source=http://ftp.debian.org/debian
+keyring=debian-archive-keyring
+components=main contrib non-free
+suite=wheezy
+omitdebsrc=true
+
+[wheezy-updates]
+source=http://ftp.debian.org/debian
+keyring=debian-archive-keyring
+components=main contrib non-free
+suite=wheezy-updates
+omitdebsrc=true
+
+[wheezy-security]
+source=http://security.debian.org
+keyring=debian-archive-keyring
+components=main contrib non-free
+suite=wheezy/updates
+omitdebsrc=true
+END
+
+####################################################################################
+
+# prepare multistrap-hdd
+multistrap -d $RFShdd -f $RFShddCFG
+
+
+
+##################################################
+# MULTISTRAP 2-nd STAGE
+##################################################
+
+This will fake-mount some volumes before entering chroot and umount at exit.
+
+if [ -d $RFShdd ]; then
+    cp /usr/bin/qemu-arm-static $RFShdd/usr/bin/
+    mount -t proc proc $RFShdd/proc && mkdir ${RFShdd}/dev/pts ; mount -t devpts devpts $RFShdd/dev/pts && chroot $RFShdd ; umount $RFShdd/proc ; umount $RFShdd/dev/pts ; rmdir $RFShdd/dev/pts
+    rm -f $RFShdd/usr/bin/qemu-arm-static
+fi
+
+########################################################
+!!! NOW IN QEMU-emulated ARM CHROOT ENVIRONMENT !!!
+If you need to preconfigure a package: echo "packagename  name/question  type value" | debconf-set-selections
+########################################################
+
+# See the magic:
+uname -m
+
+
+# Preconfigures locale/lang for setup
+export LC_ALL=C LANGUAGE=C LANG=C
+echo LANG=C > /etc/default/locale
+
+# Fixup Preinstall DASH
+/var/lib/dpkg/info/dash.preinst install
+
+
+# Fake presence of OpenSSH so Dropbear will not start in chroot
+touch /usr/sbin/sshd
+chmod +x /usr/sbin/sshd
+
+DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true   dpkg --configure -a
+
+## Enable Dropbear at startup and make it default ssh client
+sed --in-place -e 's/^NO_START=1/NO_START=0/' /etc/default/dropbear
+update-alternatives --install /usr/bin/ssh ssh /usr/bin/dbclient 1
+update-alternatives --set ssh /usr/bin/dbclient
+# remove the fake sshd binary
+rm -f /usr/sbin/sshd
+
+## Choose your TimeZone
+dpkg-reconfigure -plow tzdata
+
+## Choose your locale
+dpkg-reconfigure locales
+
+## Set a root password
+passwd
+
+
+##todo: verify mountall package - can I drop it from multistrap ?
+## Get rid of some unused packages
+apt-get -y purge initramfs-tools mountall plymouth
+
+## Pre-populate APT index
+aptitude update
+aptitude -y forget-new
+
+## Install HDPARM
+aptitude -y install hdparm
+
+## Ensure we will have a serial console device
+mknod /dev/ttyS0 c 4 64
+
+## Optionally configure Midnight commander (I like Internal Editor as default)
+mc
+
+
+exit
+
+#################################
+## -> EXIT CHROOT - post-config:
+#################################
+
+
+rm -f > $RFShdd/root/.bash_history
+
+
+NASHOSTNAMESHORT=$(echo $NASHOSTNAME | cut -d. -f1)
+NASDOMAIN=$(echo $NASHOSTNAME | cut -d. -f2-)
+
+
+cat <<END > $RFShdd/etc/hostname
+$NASHOSTNAMESHORT
+END
+
+
+cat <<END > $RFShdd/etc/hosts
+127.0.0.1       localhost
+127.0.1.1       $NASHOSTNAME    $NASHOSTNAMESHORT
+::1             localhost ip6-localhost ip6-loopback
+fe00::0         ip6-localnet
+ff00::0         ip6-mcastprefix
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+END
+
+
+cat <<END > $RFShdd/etc/resolv.conf
+domain $NASDOMAIN
+search $NASDOMAIN
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+END
+
+
+cat <<END > $RFShdd/etc/network/interfaces
+# Loopback
+auto lo
+iface lo inet loopback
+
+# Ethernet
+auto eth0
+iface eth0 inet static
+        address $NASIP
+        netmask 255.255.255.0
+        gateway $NASGW
+        dns-nameservers 8.8.8.8 8.8.4.4
+        hwaddress ether $NASMAC
+
+END
+
+
+# Set up APT preferences to limit package install
+cat <<END > $RFShdd/etc/apt/apt.conf.d/99-norecommends-nosuggests
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
+END
+
+
+# Disable standard ttys
+sed -i -r -e 's/^(.:23.*:respawn:\/sbin\/getty 38400 tty.*)/#\1/' $RFShdd/etc/inittab
+
+# Enable Serial Console
+cat <<END >> $RFShdd/etc/inittab
+T0:2345:respawn:/sbin/getty -L ttyS0 115200 linux
+END
+
+
+# Prepare Mount Points for HDD attach
+mkdir -p $RFShdd/scratch
+mkdir $RFShdd/data
+
+# Prepare FSTAB
+cat <<END > $RFShdd/etc/fstab
+/dev/root              /               auto       defaults,noatime,errors=remount-ro      0    0
+tmpfs                  /tmp            tmpfs      defaults 0 0
+LABEL=usb-boot         /boot           auto       ro,nodev,nosuid,noexec,noatime,errors=remount-ro    0    0
+LABEL=hdd-swap         none            swap       sw    0    0
+LABEL=hdd-scratch      /scratch        auto       defaults,noatime    0    0
+LABEL=hdd-data         /data           auto       defaults,noatime    0    0
+END
+
+
+
+# Configuration for fw_printenv / fw_setenv [taken from stock fw]
+cat <<END > $RFShdd/etc/fw_env.config
+# Configuration file for fw_(printenv/saveenv) utility.
+# Up to two entries are valid, in this case the redundand
+# environment sector is assumed present.
+# Notice, that the "Number of sectors" is ignored on NOR.
+
+# MTD device name       Device offset   Env. size       Flash sector size       Number of sectors
+# NAND example
+/dev/mtd1               0x0000          0x20000         0x20000                 4
+END
+
+
+
+## BOOTLOADER CHANGE SCRIPTS
+
+
+
+cat <<END > $RFShdd/usr/local/sbin/switchboot_stock
+#!/bin/bash
+echo "CURRENT UBOOT OPTIONS:"
+fw_printenv|grep boot
+read -p "DO YOU REALLY WANT TO SWITCH BOOT LOADER TO BOOT STOCK FW? [Y/N]" -n 1 -r
+if [[ \$REPLY =~ ^[Yy]\$ ]]
+then
+	echo ""
+	echo "Then TYPE:"
+    echo "fw_setenv bootcmd run switchboot_stock"
+fi
+echo ""
+echo "NEW UBOOT OPTIONS:"
+fw_printenv|grep boot
+END
+
+chmod +x $RFShdd/usr/local/sbin/switchboot_stock
+
+
+cat <<END > $RFShdd/usr/local/sbin/switchboot_usb
+#!/bin/bash
+echo "CURRENT UBOOT OPTIONS:"
+fw_printenv|grep boot
+read -p "DO YOU REALLY WANT TO SWITCH BOOT LOADER TO BOOT FROM USB? [Y/N]" -n 1 -r
+if [[ \$REPLY =~ ^[Yy]\$ ]]
+then
+	echo ""
+	echo "Then TYPE:"
+    echo "fw_setenv bootcmd run switchboot_usb"
+fi
+echo ""
+echo "NEW UBOOT OPTIONS:"
+fw_printenv|grep boot
+END
+
+chmod +x $RFShdd/usr/local/sbin/switchboot_usb
+
+
+
+# Use a tmpfs for /tmp
+sed -i 's/^#*\(RAMTMP\)=.*$/\1=yes/' $RFShdd/etc/default/tmpfs
+
+
+[ ! -e $RFShdd/etc/mtab ] || rm $RFShdd/etc/mtab
+ln -s /proc/mounts $RFShdd/etc/mtab
+
+[ ! -e $RFShdd/etc/blkid.tab ] || rm $RFShdd/etc/blkid.tab
+ln -s /dev/null $RFShdd/etc/blkid.tab
+
+
+
+
+
+## Set up EseKeyD to control NAS buttons
+sed --in-place -e 's/^START_ESEKEYD=false/START_ESEKEYD=true/' $RFShdd/etc/default/esekeyd
+
+cat <<END > $RFShdd/etc/esekeyd.conf
+POWER:/usr/local/sbin/button-power
+RESTART:/sbin/halt -f -p
+COPY:/usr/local/sbin/button-copy
+END
+
+## POWER BUTTON
+cat <<END > $RFShdd/usr/local/sbin/button-power
+#!/bin/sh
+echo 0     > /sys/class/leds/nsa325:green:sys/brightness
+echo timer > /sys/class/leds/nsa325:orange:sys/trigger
+/sbin/shutdown -h now
+END
+
+chmod +x $RFShdd/usr/local/sbin/button-power
+
+
+## COPY BUTTON
+cat <<END > $RFShdd/usr/local/sbin/button-copy
+#!/bin/sh
+# Sample script to show buttons customization and LED functionality
+# Substitute with what you want, for ex.: WiFi on/off
+curr_bright=\$(cat /sys/class/leds/nsa325:red:copy/brightness)
+if [ \$curr_bright = 255 ]; then
+        new_bright="0"
+else
+        new_bright="255"
+fi
+echo \$new_bright > /sys/class/leds/nsa325:red:copy/brightness
+END
+
+chmod +x $RFShdd/usr/local/sbin/button-copy
+###############/TODO
+
+#### not on this version, we have plenty space!
+## free up some more space
+#### find -type f $RFShdd/usr/share/doc/ -name "*" -delete
+#### find $RFShdd/etc/ -name "*~" -delete
+#### find $RFShdd/var/cache/debconf/ -name "*-old" -delete
+#### find $RFShdd/var/lib/dpkg/ -name "*-old" -delete
+#### :> $RFShdd/var/log/dpkg.log
+#### :> $RFShdd/var/log/alternatives.log
+
+
+
+
+# Fix a strange error in hwclock (seems http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=699554)
+cat <<END > $RFShdd/etc/adjtime
+0.0 0 0.0
+0
+UTC
+END
+
+
+######################
+## RC.LOCAL
+######################
+
+cat <<END > $RFShdd/etc/rc.local
+#!/bin/sh -e
+# Initialize LED Triggers
+if [ -d /sys/class/leds/nsa325:green:sys ]; then
+    echo default-on  > /sys/class/leds/nsa325:green:sys/trigger
+    echo none        > /sys/class/leds/nsa325:orange:sys/trigger
+    echo ide-disk1   > /sys/class/leds/nsa325:red:hdd1/trigger
+    echo ide-disk2   > /sys/class/leds/nsa325:red:hdd2/trigger
+    if [ -d /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:hdd1/trigger
+    fi
+    if [ -d /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:hdd2/trigger
+    fi
+fi	
+
+
+# Increase HDD Block Device Performance
+for hdd in \`find /sys/devices/platform/sata_mv.0 -type d -name block -exec /bin/ls {} \; 2>/dev/null\`
+do
+echo "1024" > /sys/block/\$hdd/queue/read_ahead_kb
+done
+
+
+# Adjust Memory Settings according to Zyxel defaults
+echo 5000 > /proc/sys/vm/min_free_kbytes
+echo  300 > /proc/sys/vm/vfs_cache_pressure
+echo    1 > /proc/sys/vm/dirty_background_ratio
+echo    1 > /proc/sys/vm/dirty_ratio
+
+
+# PREVENT OOM-Killer from killing critical processes
+pgrep -f /usr/sbin/dropbear | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done
+pgrep -f /usr/sbin/esekeyd | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done
+# TTY is special because is spawned differently
+sleep 10 && pgrep -f /sbin/getty | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done &
+
+
+# Fix /var/run/screen permissions on overlayfs
+[ -d /var/run/screen ] || mkdir -m 755 /var/run/screen
+chmod 755 /var/run/screen
+
+exit 0
+END
+
+
+
+
+## Some custom bash aliases
+
+cat <<END > $RFShdd/etc/profile.d/z-custom-aliases.sh
+if [ "\$BASH" ]; then
+  export LS_OPTIONS='--color=auto'
+  eval "\`dircolors\`"
+  alias ls='ls \$LS_OPTIONS'
+  alias ll='ls \$LS_OPTIONS -l'
+  alias l='ls \$LS_OPTIONS -la'
+fi
+END
+
+cat <<END > $RFShdd/etc/profile.d/z-vim.sh
+alias vi=vim.tiny
+END
+
+##################################################
+# INITRAMS
+##################################################
+
+See initramfs.txt for uInitramfs creation, then:
+
+cp $NASINITRAMFS/uInitramfs $RFShdd/boot/uInitramfs
+
+If you want to exclude OverlayFS, you can just create empty file:
+
+touch $RFShdd/disable-root-ro
+
+
+#######################################################################################################################
+## Credits: 
+## http://free-electrons.com/blog/embdebian-with-multistrap/
+## http://jamie.lentin.co.uk/devices/dlink-dns325/userland-configuration/
+#######################################################################################################################
