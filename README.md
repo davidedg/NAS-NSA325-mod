@@ -27,12 +27,15 @@ Recommended read order:
 
 - uboot/stock_u-boot.txt
 	- Modify bootloader options to boot from USB
-	
+
+
+- Go to https://github.com/davidedg/NAS-mod-config for further customizations
+
+
 
 ToDO:
 
 - Document HDD integration from hdd-data*,hdd-swap,hdd-scratch
-- Integrate Samba config from NAS-DNS325-mod
 
 
 CREDITS: please see each file the Credits section.
