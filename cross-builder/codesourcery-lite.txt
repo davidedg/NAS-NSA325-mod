@@ -1,1 +1,26 @@
-https://sourcery.mentor.com/GNUToolchain/release2635
+##############################################################
+# https://sourcery.mentor.com/GNUToolchain/release2635
+
+aptitude install build-essential libncurses-dev u-boot-tools
+
+cd /usr/local/src
+wget https://sourcery.mentor.com/GNUToolchain/package11444/public/arm-none-eabi/arm-2013.05-23-arm-none-eabi.bin
+
+sudo dpkg-reconfigure -plow dash
+	Install as /bin/sh? No
+
+/bin/sh /usr/local/src/arm-2013.05-23-arm-none-eabi.bin -i console
+
+accept all defaults...
+
+sudo dpkg-reconfigure -plow dash
+	Install as /bin/sh? YES
+
+
+
+echo "# CROSS COMPILE CONFIGURATION" >> ~/.bashrc
+echo "export PATH=/root/CodeSourcery/Sourcery_CodeBench_Lite_for_ARM_EABI/bin:$PATH" >> ~/.bashrc
+echo "export CROSS_COMPILE=arm-none-eabi-" >> ~/.bashrc
+echo "export ARCH=arm" >> ~/.bashrc
+
+
