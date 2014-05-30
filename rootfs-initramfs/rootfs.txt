@@ -385,16 +385,15 @@ echo    1 > /proc/sys/vm/dirty_background_ratio
 echo    1 > /proc/sys/vm/dirty_ratio
 
 
+# Fix /var/run/screen permissions on overlayfs
+[ -d /var/run/screen ] || mkdir -m 755 /var/run/screen
+chmod 755 /var/run/screen
+
 # PREVENT OOM-Killer from killing critical processes
 pgrep -f /usr/sbin/dropbear | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done
 pgrep -f /usr/sbin/esekeyd | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done
 # TTY is special because is spawned differently
 sleep 10 && pgrep -f /sbin/getty | while read PID; do echo -1000 > /proc/\$PID/oom_score_adj; done &
-
-
-# Fix /var/run/screen permissions on overlayfs
-[ -d /var/run/screen ] || mkdir -m 755 /var/run/screen
-chmod 755 /var/run/screen
 
 exit 0
 END
