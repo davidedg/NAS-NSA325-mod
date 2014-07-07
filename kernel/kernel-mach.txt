@@ -73,6 +73,9 @@ CONFIG_HW_RANDOM=y
 # initramfs support (to be able to use root=LABEL=)
 CONFIG_TMPFS=y
 CONFIG_BLK_DEV_INITRD=y
+# DEV KERNEL SUPPORT
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
 # NetConsole support
 CONFIG_NETCONSOLE=m
 EOF
@@ -205,7 +208,8 @@ EOF
 cat <<EOF >>.config
 # Disk Managers - MD
 CONFIG_MD=y
-CONFIG_MD_AUTODETECT=y
+# MD AUTODETECT IS DEPRECATED AND DOES NOT SEEM TO WORK ANYMORE
+CONFIG_MD_AUTODETECT=n
 CONFIG_BLK_DEV_MD=y
 CONFIG_MD_LINEAR=y
 CONFIG_MD_RAID0=y
@@ -385,7 +389,7 @@ make -j8 uImage modules
 ##################################################
 
 # find current compiled version (Major.Minor)
-KERNELVERSION=$(grep -m5 "Linux/arm .* Kernel Configuration" .config | sed 's/.*Linux\/arm \(.*\) Kernel Configuration/\1/g' | cut -d. -f1-2)
+KERNELVERSION=$(grep -m5 "Linux/arm .* Kernel Configuration" .config | sed 's/.*Linux\/arm \(.*\) Kernel Configuration/\1/g' | cut -d. -f1-3)
 
 
 # COPY uImage+modules to RootFS for HDD/USB:
