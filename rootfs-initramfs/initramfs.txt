@@ -30,7 +30,7 @@ mkdir -p $NASINITRAMFS/stage/scripts
 	# Just compile support in kernel, it's easier.
 	# If you still need it, you may try with;
 	mkdir -p $NASINITRAMFS/stage/lib/modules
-	cd ${KERNELWORKDIR}/nsa325v2-3.14.2
+	cd ${KERNELWORKDIR}/nsa325v2-3.16.2
 	make INSTALL_MOD_PATH=$NASINITRAMFS/stage modules_install
 	cd -
 

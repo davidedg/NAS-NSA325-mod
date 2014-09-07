@@ -1,18 +1,6 @@
-diff -Naur a/arch/arm/mach-kirkwood/common.h b/arch/arm/mach-kirkwood/common.h
---- a/arch/arm/mach-kirkwood/common.h	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/mach-kirkwood/common.h	2014-03-31 21:20:47.000000000 -0700
-@@ -67,8 +67,6 @@
- /* board init functions for boards not fully converted to fdt */
- #ifdef CONFIG_MACH_MV88F6281GTW_GE_DT
- void mv88f6281gtw_ge_init(void);
--#else
--static inline void mv88f6281gtw_ge_init(void) {};
- #endif
- 
- /* early init functions not converted to fdt yet */
 diff -Naur a/arch/arm/mach-kirkwood/dockstar-setup.c b/arch/arm/mach-kirkwood/dockstar-setup.c
 --- a/arch/arm/mach-kirkwood/dockstar-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/dockstar-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/dockstar-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,115 @@
 +/*
 + * arch/arm/mach-kirkwood/dockstar-setup.c
@@ -131,7 +119,7 @@ diff -Naur a/arch/arm/mach-kirkwood/dockstar-setup.c b/arch/arm/mach-kirkwood/do
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/goflexhome-setup.c b/arch/arm/mach-kirkwood/goflexhome-setup.c
 --- a/arch/arm/mach-kirkwood/goflexhome-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/goflexhome-setup.c	2014-04-15 01:55:32.000000000 -0700
++++ b/arch/arm/mach-kirkwood/goflexhome-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,128 @@
 +/*
 + * arch/arm/mach-kirkwood/goflexhome-setup.c
@@ -263,7 +251,7 @@ diff -Naur a/arch/arm/mach-kirkwood/goflexhome-setup.c b/arch/arm/mach-kirkwood/
 +
 diff -Naur a/arch/arm/mach-kirkwood/goflexnet-setup.c b/arch/arm/mach-kirkwood/goflexnet-setup.c
 --- a/arch/arm/mach-kirkwood/goflexnet-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/goflexnet-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/goflexnet-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,177 @@
 +/*
 + * arch/arm/mach-kirkwood/goflexnet-setup.c
@@ -444,7 +432,7 @@ diff -Naur a/arch/arm/mach-kirkwood/goflexnet-setup.c b/arch/arm/mach-kirkwood/g
 +
 diff -Naur a/arch/arm/mach-kirkwood/guruplug-setup.c b/arch/arm/mach-kirkwood/guruplug-setup.c
 --- a/arch/arm/mach-kirkwood/guruplug-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/guruplug-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/guruplug-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,135 @@
 +/*
 + * arch/arm/mach-kirkwood/guruplug-setup.c
@@ -583,7 +571,7 @@ diff -Naur a/arch/arm/mach-kirkwood/guruplug-setup.c b/arch/arm/mach-kirkwood/gu
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/iconnect-setup.c b/arch/arm/mach-kirkwood/iconnect-setup.c
 --- a/arch/arm/mach-kirkwood/iconnect-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/iconnect-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/iconnect-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,204 @@
 +/*
 + * arch/arm/mach-kirkwood/iconnect-setup.c
@@ -790,8 +778,8 @@ diff -Naur a/arch/arm/mach-kirkwood/iconnect-setup.c b/arch/arm/mach-kirkwood/ic
 +	.restart	= kirkwood_restart,
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/Kconfig b/arch/arm/mach-kirkwood/Kconfig
---- a/arch/arm/mach-kirkwood/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/mach-kirkwood/Kconfig	2014-04-07 15:51:56.000000000 -0700
+--- a/arch/arm/mach-kirkwood/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/arch/arm/mach-kirkwood/Kconfig	2014-08-08 13:52:49.000000000 -0700
 @@ -5,29 +5,55 @@
  config KIRKWOOD_LEGACY
  	bool
@@ -964,31 +952,31 @@ diff -Naur a/arch/arm/mach-kirkwood/Kconfig b/arch/arm/mach-kirkwood/Kconfig
  comment "Device tree entries"
  
  config ARCH_KIRKWOOD_DT
-@@ -113,6 +198,7 @@
+@@ -106,6 +191,7 @@
  	  Say 'Y' here if you want your kernel to support the
- 	  Marvell 88F6281 GTW GE Board (Flattened Device Tree).
+ 	  Marvell Kirkwood using flattened device tree.
  
 +
  endmenu
  
  endif
 diff -Naur a/arch/arm/mach-kirkwood/Makefile b/arch/arm/mach-kirkwood/Makefile
---- a/arch/arm/mach-kirkwood/Makefile	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/mach-kirkwood/Makefile	2014-04-07 15:53:17.000000000 -0700
-@@ -1,6 +1,4 @@
--obj-y				+= common.o pcie.o
--obj-$(CONFIG_KIRKWOOD_LEGACY)	+= irq.o mpp.o
--obj-$(CONFIG_PM)		+= pm.o
+--- a/arch/arm/mach-kirkwood/Makefile	2014-08-03 15:25:02.000000000 -0700
++++ b/arch/arm/mach-kirkwood/Makefile	2014-08-08 13:52:49.000000000 -0700
+@@ -1,6 +1,7 @@
+-obj-$(CONFIG_KIRKWOOD_LEGACY)	+= irq.o mpp.o common.o pcie.o
 +obj-y				+= common.o irq.o pcie.o mpp.o
+ obj-$(CONFIG_PM)		+= pm.o
  
++
  obj-$(CONFIG_MACH_D2NET_V2)		+= d2net_v2-setup.o lacie_v2-common.o
  obj-$(CONFIG_MACH_NET2BIG_V2)		+= netxbig_v2-setup.o lacie_v2-common.o
-@@ -12,5 +10,20 @@
- obj-$(CONFIG_MACH_TS219)		+= ts219-setup.o tsx1x-common.o
+ obj-$(CONFIG_MACH_NET5BIG_V2)		+= netxbig_v2-setup.o lacie_v2-common.o
+@@ -12,3 +13,20 @@
  obj-$(CONFIG_MACH_TS41X)		+= ts41x-setup.o tsx1x-common.o
  
--obj-$(CONFIG_ARCH_KIRKWOOD_DT)		+= board-dt.o
--obj-$(CONFIG_MACH_MV88F6281GTW_GE_DT)	+= board-mv88f6281gtw_ge.o
+ obj-$(CONFIG_ARCH_KIRKWOOD_DT)		+= board-dt.o
++
 +obj-$(CONFIG_MACH_DOCKSTAR)		+= dockstar-setup.o
 +obj-$(CONFIG_MACH_ESATA_SHEEVAPLUG)	+= sheevaplug-setup.o
 +obj-$(CONFIG_MACH_GURUPLUG)		+= guruplug-setup.o
@@ -1005,10 +993,9 @@ diff -Naur a/arch/arm/mach-kirkwood/Makefile b/arch/arm/mach-kirkwood/Makefile
 +obj-$(CONFIG_MACH_NSA310)               += nsa310-setup.o
 +obj-$(CONFIG_MACH_NSA325)               += nsa325-setup.o
 +obj-$(CONFIG_MACH_NETGEAR_MS2110)       += netgear_ms2110-setup.o
-+
 diff -Naur a/arch/arm/mach-kirkwood/mpp.h b/arch/arm/mach-kirkwood/mpp.h
---- a/arch/arm/mach-kirkwood/mpp.h	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/mach-kirkwood/mpp.h	2014-03-31 21:20:47.000000000 -0700
+--- a/arch/arm/mach-kirkwood/mpp.h	2014-08-03 15:25:02.000000000 -0700
++++ b/arch/arm/mach-kirkwood/mpp.h	2014-08-08 13:52:49.000000000 -0700
 @@ -102,7 +102,7 @@
  #define MPP11_SATA0_ACTn	MPP( 11, 0x5, 0, 0, 0,   1,   1,   1,   1 )
  
@@ -1020,7 +1007,7 @@ diff -Naur a/arch/arm/mach-kirkwood/mpp.h b/arch/arm/mach-kirkwood/mpp.h
  #define MPP12_SPI_MOSI		MPP( 12, 0xb, 0, 0, 0,   0,   0,   0,   1 )
 diff -Naur a/arch/arm/mach-kirkwood/nas6210-setup.c b/arch/arm/mach-kirkwood/nas6210-setup.c
 --- a/arch/arm/mach-kirkwood/nas6210-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/nas6210-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/nas6210-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,186 @@
 +/*
 + * arch/arm/mach-kirkwood/nas6210-setup.c
@@ -1210,7 +1197,7 @@ diff -Naur a/arch/arm/mach-kirkwood/nas6210-setup.c b/arch/arm/mach-kirkwood/nas
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/netgear_ms2110-setup.c b/arch/arm/mach-kirkwood/netgear_ms2110-setup.c
 --- a/arch/arm/mach-kirkwood/netgear_ms2110-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/netgear_ms2110-setup.c	2014-04-07 16:23:59.000000000 -0700
++++ b/arch/arm/mach-kirkwood/netgear_ms2110-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,293 @@
 +/*
 + * arch/arm/mach-kirkwood/netgear_ms2110-setup.c 
@@ -1507,7 +1494,7 @@ diff -Naur a/arch/arm/mach-kirkwood/netgear_ms2110-setup.c b/arch/arm/mach-kirkw
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/nsa310-setup.c b/arch/arm/mach-kirkwood/nsa310-setup.c
 --- a/arch/arm/mach-kirkwood/nsa310-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/nsa310-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/nsa310-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,358 @@
 +/*
 + * arch/arm/mach-kirkwood/nsa310-setup.c
@@ -1869,8 +1856,8 @@ diff -Naur a/arch/arm/mach-kirkwood/nsa310-setup.c b/arch/arm/mach-kirkwood/nsa3
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/nsa320-setup.c b/arch/arm/mach-kirkwood/nsa320-setup.c
 --- a/arch/arm/mach-kirkwood/nsa320-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/nsa320-setup.c	2014-03-31 21:20:47.000000000 -0700
-@@ -0,0 +1,305 @@
++++ b/arch/arm/mach-kirkwood/nsa320-setup.c	2014-08-15 18:03:02.000000000 -0700
+@@ -0,0 +1,304 @@
 +/*
 + * arch/arm/mach-kirkwood/nsa320-setup.c
 + *
@@ -1905,8 +1892,7 @@ diff -Naur a/arch/arm/mach-kirkwood/nsa320-setup.c b/arch/arm/mach-kirkwood/nsa3
 +	{
 +		.name = "uboot",
 +		.offset = 0,
-+		.size = SZ_1M,
-+		.mask_flags = MTD_WRITEABLE
++		.size = SZ_1M
 +	}, {
 +		.name = "uboot_env",
 +		.offset = MTDPART_OFS_NXTBLK,
@@ -2178,8 +2164,8 @@ diff -Naur a/arch/arm/mach-kirkwood/nsa320-setup.c b/arch/arm/mach-kirkwood/nsa3
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/nsa325-setup.c b/arch/arm/mach-kirkwood/nsa325-setup.c
 --- a/arch/arm/mach-kirkwood/nsa325-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/nsa325-setup.c	2014-03-31 21:20:47.000000000 -0700
-@@ -0,0 +1,359 @@
++++ b/arch/arm/mach-kirkwood/nsa325-setup.c	2014-08-15 03:27:20.000000000 -0700
+@@ -0,0 +1,358 @@
 +/*
 + * arch/arm/mach-kirkwood/nsa325-setup.c
 + *
@@ -2218,8 +2204,7 @@ diff -Naur a/arch/arm/mach-kirkwood/nsa325-setup.c b/arch/arm/mach-kirkwood/nsa3
 +       {
 +               .name = "uboot",
 +               .offset = 0,
-+               .size = SZ_1M,
-+               .mask_flags = MTD_WRITEABLE
++               .size = SZ_1M
 +       }, {
 +               .name = "uboot_env",
 +               .offset = MTDPART_OFS_NXTBLK,
@@ -2541,7 +2526,7 @@ diff -Naur a/arch/arm/mach-kirkwood/nsa325-setup.c b/arch/arm/mach-kirkwood/nsa3
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/pogo_e02-setup.c b/arch/arm/mach-kirkwood/pogo_e02-setup.c
 --- a/arch/arm/mach-kirkwood/pogo_e02-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/pogo_e02-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/pogo_e02-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,115 @@
 +/*
 + * arch/arm/mach-kirkwood/pogo_e02-setup.c
@@ -2660,7 +2645,7 @@ diff -Naur a/arch/arm/mach-kirkwood/pogo_e02-setup.c b/arch/arm/mach-kirkwood/po
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/pogoplugv4-setup.c b/arch/arm/mach-kirkwood/pogoplugv4-setup.c
 --- a/arch/arm/mach-kirkwood/pogoplugv4-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/pogoplugv4-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/pogoplugv4-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,197 @@
 +/*
 + * arch/arm/mach-kirkwood/pogoplugv4-setup.c
@@ -2861,7 +2846,7 @@ diff -Naur a/arch/arm/mach-kirkwood/pogoplugv4-setup.c b/arch/arm/mach-kirkwood/
 +MACHINE_END
 diff -Naur a/arch/arm/mach-kirkwood/sheevaplug-setup.c b/arch/arm/mach-kirkwood/sheevaplug-setup.c
 --- a/arch/arm/mach-kirkwood/sheevaplug-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/sheevaplug-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/sheevaplug-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,170 @@
 +/*
 + * arch/arm/mach-kirkwood/sheevaplug-setup.c
@@ -3035,7 +3020,7 @@ diff -Naur a/arch/arm/mach-kirkwood/sheevaplug-setup.c b/arch/arm/mach-kirkwood/
 +#endif
 diff -Naur a/arch/arm/mach-kirkwood/topkick-setup.c b/arch/arm/mach-kirkwood/topkick-setup.c
 --- a/arch/arm/mach-kirkwood/topkick-setup.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/mach-kirkwood/topkick-setup.c	2014-03-31 21:20:47.000000000 -0700
++++ b/arch/arm/mach-kirkwood/topkick-setup.c	2014-08-08 13:52:49.000000000 -0700
 @@ -0,0 +1,165 @@
 +/*
 + * arch/arm/mach-kirkwood/topkick-setup.c
@@ -3203,8 +3188,8 @@ diff -Naur a/arch/arm/mach-kirkwood/topkick-setup.c b/arch/arm/mach-kirkwood/top
 +	.restart	= kirkwood_restart,
 +MACHINE_END
 diff -Naur a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
---- a/arch/arm/plat-orion/common.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/plat-orion/common.c	2014-03-31 00:25:00.000000000 -0700
+--- a/arch/arm/plat-orion/common.c	2014-08-03 15:25:02.000000000 -0700
++++ b/arch/arm/plat-orion/common.c	2014-08-08 13:52:49.000000000 -0700
 @@ -257,7 +257,9 @@
  /*****************************************************************************
   * GE00
@@ -3217,8 +3202,8 @@ diff -Naur a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
  static struct resource orion_ge00_shared_resources[] = {
  	{
 diff -Naur a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
---- a/arch/arm/tools/mach-types	2014-03-30 20:40:15.000000000 -0700
-+++ b/arch/arm/tools/mach-types	2014-03-31 21:20:47.000000000 -0700
+--- a/arch/arm/tools/mach-types	2014-08-03 15:25:02.000000000 -0700
++++ b/arch/arm/tools/mach-types	2014-08-08 13:52:50.000000000 -0700
 @@ -1007,3 +1007,12 @@
  eukrea_cpuimx28sd	MACH_EUKREA_CPUIMX28SD	EUKREA_CPUIMX28SD	4573
  domotab			MACH_DOMOTAB		DOMOTAB			4574
@@ -3232,11 +3217,9 @@ diff -Naur a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
 +pogoplugv3		MACH_POGOPLUGV3		POGOPLUGV3		3973
 +pogoplugv3pci		MACH_POGOPLUGV3PCI	POGOPLUGV3PCI		3976
 +nsa310			MACH_NSA310		NSA310			4022
-diff -Naur a/build-3.14-tld-2-debug-kernel.log b/build-3.14-tld-2-debug-kernel.log
-diff -Naur a/.config b/.config
 diff -Naur a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
---- a/drivers/ata/sata_mv.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/ata/sata_mv.c	2014-04-19 00:17:50.000000000 -0700
+--- a/drivers/ata/sata_mv.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/ata/sata_mv.c	2014-08-08 13:52:50.000000000 -0700
 @@ -1,6 +1,7 @@
  /*
   * sata_mv.c - Marvell SATA support
@@ -3263,11 +3246,11 @@ diff -Naur a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
  		int using_ncq = ((pp->pp_flags & MV_PP_FLAG_NCQ_EN) != 0);
  		if (want_ncq != using_ncq)
 diff -Naur a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
---- a/drivers/hwmon/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/hwmon/Kconfig	2014-03-31 21:20:47.000000000 -0700
-@@ -1556,6 +1556,19 @@
-         help
-           Support for the A/D converter on MC13783 and MC13892 PMIC.
+--- a/drivers/hwmon/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/hwmon/Kconfig	2014-08-08 13:52:50.000000000 -0700
+@@ -1624,6 +1624,19 @@
+ 	  This driver provides support for the Ultra45 workstation environmental
+ 	  sensors.
  
 +config SENSORS_NSA3XX
 +	tristate "ZyXEL NSA3xx fan speed and temperature sensors"
@@ -3286,19 +3269,19 @@ diff -Naur a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
  
  comment "ACPI drivers"
 diff -Naur a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
---- a/drivers/hwmon/Makefile	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/hwmon/Makefile	2014-03-31 21:20:47.000000000 -0700
-@@ -109,6 +109,7 @@
+--- a/drivers/hwmon/Makefile	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/hwmon/Makefile	2014-08-08 13:52:50.000000000 -0700
+@@ -113,6 +113,7 @@
  obj-$(CONFIG_SENSORS_MAX6650)	+= max6650.o
  obj-$(CONFIG_SENSORS_MAX6697)	+= max6697.o
  obj-$(CONFIG_SENSORS_MC13783_ADC)+= mc13783-adc.o
 +obj-$(CONFIG_SENSORS_NSA3XX)	+= nsa3xx-hwmon.o
  obj-$(CONFIG_SENSORS_MCP3021)	+= mcp3021.o
+ obj-$(CONFIG_SENSORS_NCT6683)	+= nct6683.o
  obj-$(CONFIG_SENSORS_NCT6775)	+= nct6775.o
- obj-$(CONFIG_SENSORS_NTC_THERMISTOR)	+= ntc_thermistor.o
 diff -Naur a/drivers/hwmon/nsa3xx-hwmon.c b/drivers/hwmon/nsa3xx-hwmon.c
 --- a/drivers/hwmon/nsa3xx-hwmon.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/hwmon/nsa3xx-hwmon.c	2014-03-31 21:20:47.000000000 -0700
++++ b/drivers/hwmon/nsa3xx-hwmon.c	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,251 @@
 +/*
 + * drivers/hwmon/nsa3xx-hwmon.c
@@ -3552,8 +3535,8 @@ diff -Naur a/drivers/hwmon/nsa3xx-hwmon.c b/drivers/hwmon/nsa3xx-hwmon.c
 +MODULE_LICENSE("GPL");
 +MODULE_ALIAS("platform:nsa3xx-hwmon");
 diff -Naur a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
---- a/drivers/ide/ide-probe.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/ide/ide-probe.c	2014-04-19 00:19:02.000000000 -0700
+--- a/drivers/ide/ide-probe.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/ide/ide-probe.c	2014-08-08 13:52:50.000000000 -0700
 @@ -206,6 +206,7 @@
  	printk(KERN_INFO "%s: dumping identify data\n", drive->name);
  	ide_dump_identify((u8 *)id);
@@ -3563,11 +3546,11 @@ diff -Naur a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
  
  	/*
 diff -Naur a/drivers/leds/Kconfig b/drivers/leds/Kconfig
---- a/drivers/leds/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/leds/Kconfig	2014-03-31 21:20:47.000000000 -0700
+--- a/drivers/leds/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/leds/Kconfig	2014-08-08 13:52:50.000000000 -0700
 @@ -487,6 +487,106 @@
- 	  This option enables support for the BlinkM RGB LED connected
- 	  through I2C. Say Y to enable support for the BlinkM LED.
+ 	  This option enabled support for the LEDs on the ARM Versatile
+ 	  and RealView boards. Say Y to enabled these.
  
 +config LEDS_TRIGGERS
 + 	bool "LED Trigger support"
@@ -3673,8 +3656,8 @@ diff -Naur a/drivers/leds/Kconfig b/drivers/leds/Kconfig
  source "drivers/leds/trigger/Kconfig"
  
 diff -Naur a/drivers/leds/trigger/ledtrig-ide-disk.c b/drivers/leds/trigger/ledtrig-ide-disk.c
---- a/drivers/leds/trigger/ledtrig-ide-disk.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/leds/trigger/ledtrig-ide-disk.c	2014-03-31 21:20:47.000000000 -0700
+--- a/drivers/leds/trigger/ledtrig-ide-disk.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/leds/trigger/ledtrig-ide-disk.c	2014-08-08 13:52:50.000000000 -0700
 @@ -1,8 +1,9 @@
  /*
   * LED IDE-Disk Activity Trigger
@@ -3731,7 +3714,7 @@ diff -Naur a/drivers/leds/trigger/ledtrig-ide-disk.c b/drivers/leds/trigger/ledt
  module_init(ledtrig_ide_init);
 diff -Naur a/drivers/media/dvb-frontends/ds3103.c b/drivers/media/dvb-frontends/ds3103.c
 --- a/drivers/media/dvb-frontends/ds3103.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/dvb-frontends/ds3103.c	2014-03-31 21:20:47.000000000 -0700
++++ b/drivers/media/dvb-frontends/ds3103.c	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,1395 @@
 +/*
 +    Montage Technology DS3103 - DVBS/S2 Demodulator driver
@@ -5130,7 +5113,7 @@ diff -Naur a/drivers/media/dvb-frontends/ds3103.c b/drivers/media/dvb-frontends/
 +MODULE_FIRMWARE(DS3103_DEFAULT_FIRMWARE);
 diff -Naur a/drivers/media/dvb-frontends/ds3103.h b/drivers/media/dvb-frontends/ds3103.h
 --- a/drivers/media/dvb-frontends/ds3103.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/dvb-frontends/ds3103.h	2014-03-31 21:20:47.000000000 -0700
++++ b/drivers/media/dvb-frontends/ds3103.h	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,47 @@
 +/*
 +    Montage Technology DS3103 - DVBS/S2 Demodulator driver
@@ -5180,8 +5163,8 @@ diff -Naur a/drivers/media/dvb-frontends/ds3103.h b/drivers/media/dvb-frontends/
 +#endif /* CONFIG_DVB_DS3103 */
 +#endif /* DS3103_H */
 diff -Naur a/drivers/media/dvb-frontends/Kconfig b/drivers/media/dvb-frontends/Kconfig
---- a/drivers/media/dvb-frontends/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/media/dvb-frontends/Kconfig	2014-03-31 21:20:48.000000000 -0700
+--- a/drivers/media/dvb-frontends/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/media/dvb-frontends/Kconfig	2014-08-08 13:52:50.000000000 -0700
 @@ -235,6 +235,20 @@
  	help
  	  A DVB-S/S2 tuner module. Say Y when you want to support this frontend.
@@ -5204,9 +5187,9 @@ diff -Naur a/drivers/media/dvb-frontends/Kconfig b/drivers/media/dvb-frontends/K
  	tristate "Fujitsu MB86A16 based"
  	depends on DVB_CORE && I2C
 diff -Naur a/drivers/media/dvb-frontends/Makefile b/drivers/media/dvb-frontends/Makefile
---- a/drivers/media/dvb-frontends/Makefile	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/media/dvb-frontends/Makefile	2014-03-31 21:20:48.000000000 -0700
-@@ -105,4 +105,6 @@
+--- a/drivers/media/dvb-frontends/Makefile	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/media/dvb-frontends/Makefile	2014-08-08 13:52:50.000000000 -0700
+@@ -106,4 +106,6 @@
  obj-$(CONFIG_DVB_RTL2832) += rtl2832.o
  obj-$(CONFIG_DVB_M88RS2000) += m88rs2000.o
  obj-$(CONFIG_DVB_AF9033) += af9033.o
@@ -5215,7 +5198,7 @@ diff -Naur a/drivers/media/dvb-frontends/Makefile b/drivers/media/dvb-frontends/
  
 diff -Naur a/drivers/media/dvb-frontends/ts2022.c b/drivers/media/dvb-frontends/ts2022.c
 --- a/drivers/media/dvb-frontends/ts2022.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/dvb-frontends/ts2022.c	2014-03-31 21:20:48.000000000 -0700
++++ b/drivers/media/dvb-frontends/ts2022.c	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,452 @@
 +  /*
 +     Driver for Montage ts2022 DVBS/S2 Silicon tuner
@@ -5671,7 +5654,7 @@ diff -Naur a/drivers/media/dvb-frontends/ts2022.c b/drivers/media/dvb-frontends/
 +MODULE_LICENSE("GPL");
 diff -Naur a/drivers/media/dvb-frontends/ts2022.h b/drivers/media/dvb-frontends/ts2022.h
 --- a/drivers/media/dvb-frontends/ts2022.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/dvb-frontends/ts2022.h	2014-03-31 21:20:48.000000000 -0700
++++ b/drivers/media/dvb-frontends/ts2022.h	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,50 @@
 +  /*
 +     Driver for Montage TS2022 DVBS/S2 Silicon tuner
@@ -5724,8 +5707,8 @@ diff -Naur a/drivers/media/dvb-frontends/ts2022.h b/drivers/media/dvb-frontends/
 +
 +#endif /* TS2022_H */
 diff -Naur a/drivers/media/rc/keymaps/Makefile b/drivers/media/rc/keymaps/Makefile
---- a/drivers/media/rc/keymaps/Makefile	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/media/rc/keymaps/Makefile	2014-04-19 00:27:19.000000000 -0700
+--- a/drivers/media/rc/keymaps/Makefile	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/media/rc/keymaps/Makefile	2014-08-08 13:52:50.000000000 -0700
 @@ -93,6 +93,7 @@
  			rc-total-media-in-hand-02.o \
  			rc-trekstor.o \
@@ -5736,7 +5719,7 @@ diff -Naur a/drivers/media/rc/keymaps/Makefile b/drivers/media/rc/keymaps/Makefi
  			rc-videomate-s350.o \
 diff -Naur a/drivers/media/rc/keymaps/rc-tt-4600.c b/drivers/media/rc/keymaps/rc-tt-4600.c
 --- a/drivers/media/rc/keymaps/rc-tt-4600.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/rc/keymaps/rc-tt-4600.c	2014-04-19 00:27:19.000000000 -0700
++++ b/drivers/media/rc/keymaps/rc-tt-4600.c	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,79 @@
 +/* rc-tt_4600.h - Keytable for Geniatech based TT4600 Remote Controller
 + * derived from drivers/media/rc/keymaps/rc-su3000.c
@@ -5818,8 +5801,8 @@ diff -Naur a/drivers/media/rc/keymaps/rc-tt-4600.c b/drivers/media/rc/keymaps/rc
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Evgeny Plehov <Evgeny Plehov@ukr.net>");
 diff -Naur a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw2102.c
---- a/drivers/media/usb/dvb-usb/dw2102.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/media/usb/dvb-usb/dw2102.c	2014-04-19 00:27:10.000000000 -0700
+--- a/drivers/media/usb/dvb-usb/dw2102.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/media/usb/dvb-usb/dw2102.c	2014-08-08 13:52:50.000000000 -0700
 @@ -23,7 +23,9 @@
  #include "mt312.h"
  #include "zl10039.h"
@@ -6083,8 +6066,8 @@ diff -Naur a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw21
  			" Geniatech SU3000, T220 devices");
  MODULE_VERSION("0.1");
 diff -Naur a/drivers/media/usb/dvb-usb/Kconfig b/drivers/media/usb/dvb-usb/Kconfig
---- a/drivers/media/usb/dvb-usb/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/media/usb/dvb-usb/Kconfig	2014-03-31 21:20:56.000000000 -0700
+--- a/drivers/media/usb/dvb-usb/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/media/usb/dvb-usb/Kconfig	2014-08-08 13:52:50.000000000 -0700
 @@ -272,6 +272,8 @@
  	select DVB_ZL10039 if MEDIA_SUBDRV_AUTOSELECT
  	select DVB_DS3000 if MEDIA_SUBDRV_AUTOSELECT
@@ -6095,8 +6078,8 @@ diff -Naur a/drivers/media/usb/dvb-usb/Kconfig b/drivers/media/usb/dvb-usb/Kconf
  	select DVB_STV6110 if MEDIA_SUBDRV_AUTOSELECT
  	select DVB_STV0900 if MEDIA_SUBDRV_AUTOSELECT
 diff -Naur a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
---- a/drivers/mmc/core/sd.c	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/mmc/core/sd.c	2014-03-31 21:20:56.000000000 -0700
+--- a/drivers/mmc/core/sd.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/mmc/core/sd.c	2014-08-08 13:52:50.000000000 -0700
 @@ -366,6 +366,15 @@
  		return -ENOMEM;
  	}
@@ -6113,9 +6096,21 @@ diff -Naur a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
  	err = mmc_sd_switch(card, 1, 0, 1, status);
  	if (err)
  		goto out;
+diff -Naur a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c	2014-08-31 16:22:43.000000000 -0700
+@@ -3110,7 +3110,7 @@
+ 	dev->watchdog_timeo = 2 * HZ;
+ 	dev->base_addr = 0;
+ 
+-	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO;
++	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM;
+ 	dev->vlan_features = dev->features;
+ 
+ 	dev->features |= NETIF_F_RXCSUM;
 diff -Naur a/drivers/net/Kconfig b/drivers/net/Kconfig
---- a/drivers/net/Kconfig	2014-03-30 20:40:15.000000000 -0700
-+++ b/drivers/net/Kconfig	2014-03-31 21:20:56.000000000 -0700
+--- a/drivers/net/Kconfig	2014-08-03 15:25:02.000000000 -0700
++++ b/drivers/net/Kconfig	2014-08-08 13:52:50.000000000 -0700
 @@ -26,6 +26,7 @@
  if NETDEVICES
  
@@ -6125,8 +6120,8 @@ diff -Naur a/drivers/net/Kconfig b/drivers/net/Kconfig
  
  config NET_CORE
 diff -Naur a/include/linux/ide.h b/include/linux/ide.h
---- a/include/linux/ide.h	2014-03-30 20:40:15.000000000 -0700
-+++ b/include/linux/ide.h	2014-04-19 00:20:56.000000000 -0700
+--- a/include/linux/ide.h	2014-08-03 15:25:02.000000000 -0700
++++ b/include/linux/ide.h	2014-08-08 13:52:50.000000000 -0700
 @@ -1516,7 +1516,10 @@
  
  static inline void ide_dump_identify(u8 *id)
@@ -6140,8 +6135,8 @@ diff -Naur a/include/linux/ide.h b/include/linux/ide.h
  
  static inline int hwif_to_node(ide_hwif_t *hwif)
 diff -Naur a/include/linux/leds.h b/include/linux/leds.h
---- a/include/linux/leds.h	2014-03-30 20:40:15.000000000 -0700
-+++ b/include/linux/leds.h	2014-03-31 21:20:57.000000000 -0700
+--- a/include/linux/leds.h	2014-08-03 15:25:02.000000000 -0700
++++ b/include/linux/leds.h	2014-08-08 13:52:50.000000000 -0700
 @@ -1,6 +1,7 @@
  /*
   * Driver model for leds and led triggers
@@ -6164,7 +6159,7 @@ diff -Naur a/include/linux/leds.h b/include/linux/leds.h
  #if defined(CONFIG_LEDS_TRIGGER_CAMERA) || defined(CONFIG_LEDS_TRIGGER_CAMERA_MODULE)
 diff -Naur a/include/linux/nsa3xx-hwmon.h b/include/linux/nsa3xx-hwmon.h
 --- a/include/linux/nsa3xx-hwmon.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/linux/nsa3xx-hwmon.h	2014-03-31 21:20:57.000000000 -0700
++++ b/include/linux/nsa3xx-hwmon.h	2014-08-08 13:52:50.000000000 -0700
 @@ -0,0 +1,21 @@
 +/*
 + * include/linux/nsa3xx.hwmon.h
@@ -6188,9 +6183,9 @@ diff -Naur a/include/linux/nsa3xx-hwmon.h b/include/linux/nsa3xx-hwmon.h
 +
 +#endif /* __LINUX_NSA3XX_HWMON_H */
 diff -Naur a/include/media/rc-map.h b/include/media/rc-map.h
---- a/include/media/rc-map.h	2014-03-30 20:40:15.000000000 -0700
-+++ b/include/media/rc-map.h	2014-04-19 00:27:19.000000000 -0700
-@@ -187,6 +187,7 @@
+--- a/include/media/rc-map.h	2014-08-03 15:25:02.000000000 -0700
++++ b/include/media/rc-map.h	2014-08-08 13:52:50.000000000 -0700
+@@ -189,6 +189,7 @@
  #define RC_MAP_TOTAL_MEDIA_IN_HAND_02    "rc-total-media-in-hand-02"
  #define RC_MAP_TREKSTOR                  "rc-trekstor"
  #define RC_MAP_TT_1500                   "rc-tt-1500"

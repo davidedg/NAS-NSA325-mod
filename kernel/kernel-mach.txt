@@ -1,9 +1,8 @@
 
 
-# patch with BODHI's patches:
+# patch with BODHI's patches for 3.16 tree:
 cd $KERNELWORKDIR/$KERNELCURRENT
-patch -p1 <../linux-3.14.0-tld-2-kirkwood.patch
-
+patch -p1 <../linux-3.16.0-kirkwood-tld-2.patch
 
 
 ## Prep tree
@@ -372,10 +371,10 @@ make menuconfig
 
 make -j8 uImage modules
 
-	Image Name:   Linux-3.14.3+mach
-	Created:      Tue May 13 23:59:06 2014
+	Image Name:   Linux-3.16.2+mach+bt+vga
+	Created:      Sun Sep  7 13:10:37 2014
 	Image Type:   ARM Linux Kernel Image (uncompressed)
-	Data Size:    3329456 Bytes = 3251.42 kB = 3.18 MB
+	Data Size:    3210928 Bytes = 3135.67 kB = 3.06 MB
 	Load Address: 00008000
 	Entry Point:  00008000
 	  Image arch/arm/boot/uImage is ready
@@ -389,6 +388,7 @@ make -j8 uImage modules
 ##################################################
 
 # find current compiled version (Major.Minor)
+cd $KERNELWORKDIR/$KERNELCURRENT
 KERNELVERSION=$(grep -m5 "Linux/arm .* Kernel Configuration" .config | sed 's/.*Linux\/arm \(.*\) Kernel Configuration/\1/g' | cut -d. -f1-3)
 
 
