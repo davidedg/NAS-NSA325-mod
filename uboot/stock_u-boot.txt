@@ -69,8 +69,10 @@ pcieTune1=no
 
 
 
-NEW U-BOOT ENVIRONMENT:
+NEW ENVIRONMENT FOR STOCK U-BOOT:
 ################################
+
+# Insert these variables:
 
 setenv usb_wakeup mw.l f1010100 0020c000
 setenv uInitramfsAddr 0x01100000

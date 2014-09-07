@@ -15,7 +15,7 @@ While doing tests, I used a local caching proxy (squid), to avoid downloading ag
 
 For 2-nd stage part, I used QEMU emulation (On Debian, the needed package is qemu-user-static).
 
-#todo: rimosso mountall, forse ?
+
 ##################################################
 # MULTISTRAP config file
 ##################################################
@@ -36,7 +36,7 @@ aptsources=wheezy wheezy-updates wheezy-security
 cleanup=true
 
 [wheezy]
-packages=udev kmod mtd-utils evtest usbutils xfsprogs parted gdisk esekeyd u-boot-tools cpio klibc-utils makedev procps psmisc less apt aptitude dialog netbase net-tools ethtool ifupdown iproute iptables pump iputils-ping dropbear rsyslog ntpdate vim-tiny mc htop nmon locales wget bash-completion screen
+packages=udev kmod mtd-utils evtest usbutils xfsprogs parted gdisk hddtemp esekeyd u-boot-tools cpio klibc-utils makedev procps psmisc less apt apt-utils aptitude dialog netbase net-tools ethtool ifupdown iproute iptables pump iputils-ping dropbear rsyslog ntpdate vim-tiny mc htop nmon locales ncurses-term wget bash-completion screen
 source=http://ftp.debian.org/debian
 keyring=debian-archive-keyring
 components=main contrib non-free
@@ -111,15 +111,17 @@ rm -f /usr/sbin/sshd
 dpkg-reconfigure -plow tzdata
 
 ## Choose your locale
+# I choose: en_US.UTF-8, it_IT.UTF-8 and "none" as the default
 dpkg-reconfigure locales
+
+## Set Default LANG and Encoding
+cat <<END > /etc/profile.d/z-setlanguage.sh
+: \${LANG:=en_US.UTF-8}; export LANG
+END
 
 ## Set a root password
 passwd
 
-
-##todo: verify mountall package - can I drop it from multistrap ?
-## Get rid of some unused packages
-apt-get -y purge initramfs-tools mountall plymouth
 
 ## Pre-populate APT index
 aptitude update
@@ -131,9 +133,9 @@ aptitude -y install hdparm
 ## Ensure we will have a serial console device
 mknod /dev/ttyS0 c 4 64
 
-## Optionally configure Midnight commander (I like Internal Editor as default)
+## Optionally configure some programs
 mc
-
+htop
 
 exit
 
@@ -223,60 +225,17 @@ END
 
 
 # Configuration for fw_printenv / fw_setenv [taken from stock fw]
+# Uncomment the section for your U-boot, either stock or new
+
 cat <<END > $RFShdd/etc/fw_env.config
 # Configuration file for fw_(printenv/saveenv) utility.
-# Up to two entries are valid, in this case the redundand
-# environment sector is assumed present.
-# Notice, that the "Number of sectors" is ignored on NOR.
-
+# Up to two entries are valid, in this case the redundand environment sector is assumed present.
 # MTD device name       Device offset   Env. size       Flash sector size       Number of sectors
-# NAND example
-/dev/mtd1               0x0000          0x20000         0x20000                 4
+# New U-boot
+##/dev/mtd0               0xc0000         0x20000         0x20000
+# Stock U-boot
+##/dev/mtd1               0x0000          0x20000         0x20000                 4
 END
-
-
-
-## BOOTLOADER CHANGE SCRIPTS
-
-
-
-cat <<END > $RFShdd/usr/local/sbin/switchboot_stock
-#!/bin/bash
-echo "CURRENT UBOOT OPTIONS:"
-fw_printenv|grep boot
-read -p "DO YOU REALLY WANT TO SWITCH BOOT LOADER TO BOOT STOCK FW? [Y/N]" -n 1 -r
-if [[ \$REPLY =~ ^[Yy]\$ ]]
-then
-	echo ""
-	echo "Then TYPE:"
-    echo "fw_setenv bootcmd run switchboot_stock"
-fi
-echo ""
-echo "NEW UBOOT OPTIONS:"
-fw_printenv|grep boot
-END
-
-chmod +x $RFShdd/usr/local/sbin/switchboot_stock
-
-
-cat <<END > $RFShdd/usr/local/sbin/switchboot_usb
-#!/bin/bash
-echo "CURRENT UBOOT OPTIONS:"
-fw_printenv|grep boot
-read -p "DO YOU REALLY WANT TO SWITCH BOOT LOADER TO BOOT FROM USB? [Y/N]" -n 1 -r
-if [[ \$REPLY =~ ^[Yy]\$ ]]
-then
-	echo ""
-	echo "Then TYPE:"
-    echo "fw_setenv bootcmd run switchboot_usb"
-fi
-echo ""
-echo "NEW UBOOT OPTIONS:"
-fw_printenv|grep boot
-END
-
-chmod +x $RFShdd/usr/local/sbin/switchboot_usb
-
 
 
 # Use a tmpfs for /tmp
@@ -288,7 +247,6 @@ ln -s /proc/mounts $RFShdd/etc/mtab
 
 [ ! -e $RFShdd/etc/blkid.tab ] || rm $RFShdd/etc/blkid.tab
 ln -s /dev/null $RFShdd/etc/blkid.tab
-
 
 
 
@@ -328,7 +286,7 @@ echo \$new_bright > /sys/class/leds/nsa325:red:copy/brightness
 END
 
 chmod +x $RFShdd/usr/local/sbin/button-copy
-###############/TODO
+
 
 #### not on this version, we have plenty space!
 ## free up some more space
@@ -338,7 +296,6 @@ chmod +x $RFShdd/usr/local/sbin/button-copy
 #### find $RFShdd/var/lib/dpkg/ -name "*-old" -delete
 #### :> $RFShdd/var/log/dpkg.log
 #### :> $RFShdd/var/log/alternatives.log
-
 
 
 

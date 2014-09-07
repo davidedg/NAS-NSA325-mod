@@ -31,7 +31,7 @@ cp -a $RFShdd/* $USBROOTMNT/
 # move kernel and initramfs to usb-boot
 mv $USBROOTMNT/boot/*  $USBBOOTMNT/
 
-# fake for u-boot to be able to read from / and from /boot from usb 0:1
+# fake for u-boot to be able to read both from / and from /boot from usb 0:1
 cd $USBBOOTMNT
 ln -sf . boot
 cd -
