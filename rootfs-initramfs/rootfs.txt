@@ -311,25 +311,49 @@ END
 ## RC.LOCAL
 ######################
 
+
+if [ -d /sys/class/leds/nsa325:green:sys ]; then
+    echo default-on  > /sys/class/leds/nsa325:green:sys/trigger
+    echo none        > /sys/class/leds/nsa325:orange:sys/trigger
+    echo ide-disk1   > /sys/class/leds/nsa325:red:sata1/trigger
+    echo ide-disk2   > /sys/class/leds/nsa325:red:sata2/trigger
+    if [ -d /sys/devices/ocp@f1000000/f1080000.sata/ata1/host0/target0:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:sata1/trigger
+    fi
+    if [ -d /sys/devices/ocp@f1000000/f1080000.sata/ata2/host1/target1:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:sata2/trigger
+    fi
+fi
+
+
+for hdd in `find /sys/devices/ocp@f1000000/f1080000.sata -type d -name block -exec /bin/ls {} \; 2>/dev/null`
+do
+echo "1024" > /sys/block/$hdd/queue/read_ahead_kb
+done
+
+
+
+
+
 cat <<END > $RFShdd/etc/rc.local
 #!/bin/sh -e
 # Initialize LED Triggers
 if [ -d /sys/class/leds/nsa325:green:sys ]; then
     echo default-on  > /sys/class/leds/nsa325:green:sys/trigger
     echo none        > /sys/class/leds/nsa325:orange:sys/trigger
-    echo ide-disk1   > /sys/class/leds/nsa325:red:hdd1/trigger
-    echo ide-disk2   > /sys/class/leds/nsa325:red:hdd2/trigger
-    if [ -d /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0 ]; then
-        echo default-on > /sys/class/leds/nsa325:green:hdd1/trigger
+    echo ide-disk1   > /sys/class/leds/nsa325:red:sata1/trigger
+    echo ide-disk2   > /sys/class/leds/nsa325:red:sata2/trigger
+    if [ -d /sys/devices/ocp@f1000000/f1080000.sata/ata1/host0/target0:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:sata1/trigger
     fi
-    if [ -d /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0 ]; then
-        echo default-on > /sys/class/leds/nsa325:green:hdd2/trigger
+    if [ -d /sys/devices/ocp@f1000000/f1080000.sata/ata2/host1/target1:0:0 ]; then
+        echo default-on > /sys/class/leds/nsa325:green:sata2/trigger
     fi
-fi	
+fi
 
 
 # Increase HDD Block Device Performance
-for hdd in \`find /sys/devices/platform/sata_mv.0 -type d -name block -exec /bin/ls {} \; 2>/dev/null\`
+for hdd in \`find /sys/devices/ocp@f1000000/f1080000.sata -type d -name block -exec /bin/ls {} \; 2>/dev/null\`
 do
 echo "1024" > /sys/block/\$hdd/queue/read_ahead_kb
 done
