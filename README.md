@@ -19,15 +19,17 @@ Recommended read order:
 - rootfs-initramfs/rootfs.txt
 	- Build Debian 7.0 that will boot from USB stick
 
-- kernel/kernel-mach.txt
+- kernel/kernel.txt
 	- Compile Kernel instructions
 
 - install/install-on-usb.txt
 	- install rootFS on USB stick
 
 - uboot/stock_u-boot.txt
-	- Modify bootloader options to boot from USB
+	- Modify bootloader options to boot from USB/HDD with stock U-Boot
 
+- uboot/upstream_u-boot.txt
+	- Modify bootloader options to boot from USB/HDD with upstream U-Boot
 
 - Go to https://github.com/davidedg/NAS-mod-config for further customizations
 
