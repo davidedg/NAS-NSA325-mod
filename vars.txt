@@ -10,7 +10,7 @@ NASHOSTNAME=nasivadaras.ivadaras.lan
 UBOOTWORKDIR=/root/nas/nsa325/uboot
 
 KERNELWORKDIR=/root/nas/nsa325/kernel
-KERNELCURRENT=linux-3.17.7
+KERNELCURRENT=linux-3.18.7
 
 NASINITRAMFS=/root/nas/nsa325/initramfs+root-ro
 NASINITRAMFSNAME="NSA-325-v2-Initramfs"

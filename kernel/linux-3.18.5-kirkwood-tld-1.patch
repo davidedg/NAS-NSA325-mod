@@ -1,0 +1,3817 @@
+diff -Naur a/arch/arm/boot/dts/kirkwood-goflexhome.dts b/arch/arm/boot/dts/kirkwood-goflexhome.dts
+--- a/arch/arm/boot/dts/kirkwood-goflexhome.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-goflexhome.dts	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,127 @@
++/dts-v1/;
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6281.dtsi"
++
++/ {
++	model = "Seagate GoFlex Home";
++	compatible = "seagate,goflexhome", "marvell,kirkwood-88f6281", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x8000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200n8 earlyprintk root=/dev/sda1 rootdelay=10";
++		stdout-path = &uart0;
++	};
++
++       ocp@f1000000 {
++               pinctrl: pin-controller@10000 {
++                       pmx_usb_power_enable: pmx-usb-power-enable {
++                               marvell,pins = "mpp29";
++                               marvell,function = "gpio";
++                       };
++                       pmx_led_white: pmx-led_white {
++                               marvell,pins = "mpp40";
++                               marvell,function = "gpio";
++                       };
++                       pmx_led_green: pmx-led_green {
++                               marvell,pins = "mpp46";
++                               marvell,function = "gpio";
++                       };
++                       pmx_led_orange: pmx-led_orange {
++                               marvell,pins = "mpp47";
++                               marvell,function = "gpio";
++                       };
++		};
++		serial@12000 {
++			status = "ok";
++		};
++
++		sata@80000 {
++			status = "okay";
++			nr-ports = <1>;
++		};
++
++	};
++       gpio-leds {
++               compatible = "gpio-leds";
++               pinctrl-0 = < &pmx_led_orange
++                             &pmx_led_green
++                             &pmx_led_white
++                           >;
++               pinctrl-names = "default";
++
++               health {
++                       label = "status:green:health";
++                       gpios = <&gpio1 14 GPIO_ACTIVE_LOW>;
++                       default-state = "keep";
++               };
++               fault {
++                       label = "status:orange:fault";
++                       gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
++               };
++               misc {
++                       label = "status:white:misc";
++                       gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;
++                       linux,default-trigger = "ide-disk";
++               };
++	};
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_usb_power_enable>;
++		pinctrl-names = "default";
++
++		usb_power: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "USB Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-always-on;
++			regulator-boot-on;
++			gpio = <&gpio0 29 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
++
++&nand {
++	chip-delay = <40>;
++	status = "okay";
++
++	partition@0 {
++		label = "u-boot";
++		reg = <0x0000000 0x100000>;
++		read-only;
++	};
++
++	partition@100000 {
++		label = "uImage";
++		reg = <0x0100000 0x0600000>;
++	};
++
++	partition@0600000 {
++		label = "root";
++		reg = <0x0600000 0xd800000>;
++	};
++};
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff -Naur a/arch/arm/boot/dts/kirkwood-nsa325.dts b/arch/arm/boot/dts/kirkwood-nsa325.dts
+--- a/arch/arm/boot/dts/kirkwood-nsa325.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-nsa325.dts	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,358 @@
++/*
++ * Device tree file for Zyxel NSA 325 NAS
++ */
++
++/dts-v1/;
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6282.dtsi"
++
++/ {
++	model = "ZyXEL NSA325";
++	compatible = "zyxel,nsa325", "marvell,kirkwood-88f6282", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x20000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++		stdout-path = &uart0;
++	};
++
++	mbus {
++		pcie-controller {
++			status = "okay";
++
++			pcie@1,0 {
++				status = "okay";
++			};
++		};
++	};
++
++	ocp@f1000000 {
++		pinctrl: pin-controller@10000 {
++			pinctrl-names = "default";
++
++			pmx_led_sata2_green: pmx-led-sata2-green {
++				marvell,pins = "mpp12";
++				marvell,function = "gpo";
++			};
++
++			pmx_led_sata2_red: pmx-led-sata2-red {
++				marvell,pins = "mpp13";
++				marvell,function = "gpio";
++			};
++
++			pmx_mcu_data: pmx-mcu-data {
++				marvell,pins = "mpp14";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_usb_green: pmx-led-usb-green {
++				marvell,pins = "mpp15";
++				marvell,function = "gpio";
++			};
++
++			pmx_mcu_clk: pmx-mcu-clk {
++				marvell,pins = "mpp16";
++				marvell,function = "gpio";
++			};
++
++			pmx_mcu_act: pmx-mcu-act {
++				marvell,pins = "mpp17";
++				marvell,function = "gpio";
++			};
++
++			pmx_usb_power_off: pmx-usb-power-off {
++				marvell,pins = "mpp21";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_sys_green: pmx-led-sys-green {
++				marvell,pins = "mpp28";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_sys_orange: pmx-led-sys-orange {
++				marvell,pins = "mpp29";
++				marvell,function = "gpio";
++			};
++
++			pmx_btn_reset: pmx-btn-reset {
++				marvell,pins = "mpp36";
++				marvell,function = "gpio";
++			};
++
++			pmx_btn_copy: pmx-btn-copy {
++				marvell,pins = "mpp37";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_copy_green: pmx-led-copy-green {
++				marvell,pins = "mpp39";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_copy_red: pmx-led-copy-red {
++				marvell,pins = "mpp40";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_sata1_green: pmx-led-sata1-green {
++				marvell,pins = "mpp41";
++				marvell,function = "gpio";
++			};
++
++			pmx_led_sata1_red: pmx-led-sata1-red {
++				marvell,pins = "mpp42";
++				marvell,function = "gpio";
++			};
++
++			pmx_beeper: pmx-beeper {
++				marvell,pins = "mpp44";
++				marvell,function = "gpio";
++			};
++
++			pmx_btn_power: pmx-btn-power {
++				marvell,pins = "mpp46";
++				marvell,function = "gpio";
++			};
++
++			pmx_pwr_sata1: pmx-pwr-sata1 {
++				marvell,pins = "mpp47";
++				marvell,function = "gpio";
++			};
++
++			pmx_pwr_off: pmx-pwr-off {
++				marvell,pins = "mpp48";
++				marvell,function = "gpio";
++			};
++		};
++
++		/* This board uses the pcf8563 RTC instead of the SoC RTC */
++		rtc@10300 {
++			status = "disabled";
++		};
++
++		i2c@11000 {
++			status = "okay";
++
++			pcf8563: pcf8563@51 {
++				compatible = "nxp,pcf8563";
++				reg = <0x51>;
++			};
++		};
++
++		serial@12000 {
++			status = "ok";
++		};
++
++		sata@80000 {
++			status = "okay";
++			nr-ports = <2>;
++		};
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_btn_power &pmx_btn_copy &pmx_btn_reset>;
++		pinctrl-names = "default";
++
++		button@1 {
++			label = "Power Button";
++			linux,code = <KEY_POWER>;
++			gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>;
++		};
++
++		button@2 {
++			label = "Copy Button";
++			linux,code = <KEY_COPY>;
++			gpios = <&gpio1 5 GPIO_ACTIVE_LOW>;
++		};
++
++		button@3 {
++			label = "Reset Button";
++			linux,code = <KEY_RESTART>;
++			gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <&pmx_led_sata1_green &pmx_led_sata1_red
++			     &pmx_led_sata2_green &pmx_led_sata2_red
++			     &pmx_led_sys_green &pmx_led_sys_orange
++			     &pmx_led_copy_green &pmx_led_copy_red
++			     &pmx_led_usb_green>;
++		pinctrl-names = "default";
++
++		green-sata2 {
++			label = "nsa325:green:sata2";
++			gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
++		};
++
++		red-sata2 {
++			label = "nsa325:red:sata2";
++			gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
++		};
++
++		green-usb {
++			label = "nsa325:green:usb";
++			gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
++		};
++
++		green-sys {
++			label = "nsa325:green:sys";
++			gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "default-on";
++		};
++
++		orange-sys {
++			label = "nsa325:orange:sys";
++			gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "cpu0";
++		};
++
++		green-copy {
++			label = "nsa325:green:copy";
++			gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
++		};
++
++		red-copy {
++			label = "nsa325:red:copy";
++			gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;
++		};
++
++		green-sata1 {
++			label = "nsa325:green:sata1";
++			gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "sata-disk";
++		};
++
++		red-sata1 {
++			label = "nsa325:red:sata1";
++			gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++	gpio_poweroff {
++		compatible = "gpio-poweroff";
++		pinctrl-0 = <&pmx_pwr_off>;
++		pinctrl-names = "default";
++		gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
++	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_mcu_data &pmx_usb_power_off &pmx_pwr_sata1>;
++		pinctrl-names = "default";
++
++/*
++		watchdog_data: regulator@1 {
++			compatible = "regulator-fixed";
++			regulator-name = "Watchdog Data";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			regulator-always-on;
++			regulator-boot-on;
++			gpio = <&gpio0 14 GPIO_ACTIVE_HIGH>;
++		};
++*/
++
++		usb_power: regulator@2 {
++			compatible = "regulator-fixed";
++			reg = <2>;
++			regulator-name = "USB Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			regulator-always-on;
++			regulator-boot-on;
++			enable-active-high;
++			gpio = <&gpio0 21 GPIO_ACTIVE_HIGH>;
++		};
++
++		sata1_power: regulator@3 {
++			compatible = "regulator-fixed";
++			reg = <3>;
++			regulator-name = "SATA1 Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			regulator-always-on;
++			regulator-boot-on;
++			enable-active-high;
++			gpio = <&gpio1 15 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
++
++&nand {
++	status = "okay";
++	chip-delay = <35>;
++
++	partition@0 {
++		label = "uboot";
++		reg = <0x0000000 0x0100000>;
++	};
++
++	partition@100000 {
++		label = "uboot_env";
++		reg = <0x0100000 0x0080000>;
++	};
++
++	partition@180000 {
++		label = "key_store";
++		reg = <0x0180000 0x0080000>;
++	};
++
++	partition@200000 {
++		label = "info";
++		reg = <0x0200000 0x0080000>;
++	};
++
++	partition@280000 {
++		label = "etc";
++		reg = <0x0280000 0x0a00000>;
++	};
++
++	partition@c80000 {
++		label = "kernel_1";
++		reg = <0x0c80000 0x0a00000>;
++	};
++
++	partition@1680000 {
++		label = "rootfs1";
++		reg = <0x1680000 0x2fc0000>;
++	};
++
++	partition@4640000 {
++		label = "kernel_2";
++		reg = <0x4640000 0x0a00000>;
++	};
++
++	partition@5040000 {
++		label = "rootfs2";
++		reg = <0x5040000 0x2fc0000>;
++	};
++};
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@1 {
++		reg = <1>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff -Naur a/arch/arm/boot/dts/kirkwood-pogo_e02.dts b/arch/arm/boot/dts/kirkwood-pogo_e02.dts
+--- a/arch/arm/boot/dts/kirkwood-pogo_e02.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-pogo_e02.dts	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,117 @@
++/dts-v1/;
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6281.dtsi"
++
++/ {
++	model = "CloudEngines Pogoplug E02";
++	compatible = "cloudengines,pogo_e02", "marvell,kirkwood-88f6281", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200n8 earlyprintk root=/dev/sda1 rootdelay=10";
++		stdout-path = &uart0;
++	};
++
++       ocp@f1000000 {
++               pinctrl: pin-controller@10000 {
++                       pmx_usb_power_enable: pmx-usb-power-enable {
++                               marvell,pins = "mpp29";
++                               marvell,function = "gpio";
++                       };
++                       pmx_led_green: pmx-led_green {
++                               marvell,pins = "mpp48";
++                               marvell,function = "gpio";
++                       };
++                       pmx_led_orange: pmx-led_orange {
++                               marvell,pins = "mpp49";
++                               marvell,function = "gpio";
++                       };
++		};
++		serial@12000 {
++			status = "ok";
++		};
++
++	};
++       gpio-leds {
++               compatible = "gpio-leds";
++               pinctrl-0 = < &pmx_led_orange
++                             &pmx_led_green
++                           >;
++               pinctrl-names = "default";
++
++               health {
++                       label = "status:green:health";
++                       gpios = <&gpio1 16 GPIO_ACTIVE_LOW>;
++                       default-state = "keep";
++               };
++               fault {
++                       label = "status:orange:fault";
++                       gpios = <&gpio1 17 GPIO_ACTIVE_LOW>;
++               };
++	};
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_usb_power_enable>;
++		pinctrl-names = "default";
++
++		usb_power: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "USB Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-always-on;
++			regulator-boot-on;
++			gpio = <&gpio0 29 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
++
++&nand {
++	chip-delay = <25>;
++	status = "okay";
++
++	partition@0 {
++		label = "u-boot";
++		reg = <0x0000000 0x100000>;
++		read-only;
++	};
++
++	partition@100000 {
++		label = "uImage";
++		reg = <0x0100000 0x0500000>;
++	};
++
++        partition@0500000 {
++                label = "pogoplug";
++                reg = <0x0500000 0x2500000>;
++        };
++
++	partition@2500000 {
++		label = "root";
++		reg = <0x2500000 0x6c00000>;
++	};
++};
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff -Naur a/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts b/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts
+--- a/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,164 @@
++/dts-v1/;
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6192.dtsi"
++
++/ {
++	model = "Pogoplug v4";
++	compatible = "cloudengines,pogoplug-v4", "cloudengines,pogoplug-mobile", "marvell,kirkwood-88f6192", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x8000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++		stdout-path = &uart0;
++	};
++
++	mbus {
++		pcie-controller {
++			status = "okay";
++
++			pcie@1,0 {
++				status = "okay";
++			};
++		};
++	};
++
++	ocp@f1000000 {
++		pinctrl: pin-controller@10000 {
++			pmx_led_green: pmx-led-green {
++				marvell,pins = "mpp22";
++				marvell,function = "gpio";
++			};
++			pmx_led_red: pmx-led-red {
++				marvell,pins = "mpp24";
++				marvell,function = "gpio";
++			};
++			pmx_button_eject: pmx-button-eject {
++				marvell,pins = "mpp29";
++				marvell,function = "gpio";
++			};
++			/*pmx_usb_power_enable: pmx-usb-power-enable {
++				marvell,pins = "mpp29";
++				marvell,function = "gpio";
++			};*/
++		};
++
++		serial@12000 {
++			status = "ok";
++		};
++
++		sata@80000 {
++			status = "okay";
++			nr-ports = <1>;
++			phys = <&sata_phy0>;
++			phy-names = "port0";
++		};
++
++		mvsdio@90000 {
++			pinctrl-0 = <&pmx_sdio>;
++			pinctrl-names = "default";
++			status = "okay";
++			cd-gpios = <&gpio0 27 GPIO_ACTIVE_HIGH>;
++			/* No WP GPIO */
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <&pmx_led_red &pmx_led_green>;
++		pinctrl-names = "default";
++
++		health {
++			label = "status:green:health";
++			gpios = <&gpio0 22 GPIO_ACTIVE_LOW>;
++			default-state = "keep";
++		};
++		fault {
++			label = "status:red:fault";
++			gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_button_eject>;
++		pinctrl-names = "default";
++
++		button@1 {
++			label = "Eject Button";
++			linux,code = <KEY_EJECTCD>;
++			gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	/*regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_usb_power_enable>;
++		pinctrl-names = "default";
++
++		usb_power: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "USB Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-always-on;
++			regulator-boot-on;
++			gpio = <&gpio0 29 GPIO_ACTIVE_HIGH>;
++		};
++	};*/
++};
++
++&nand {
++	status = "okay";
++
++	partition@0 {
++		label = "u-boot";
++		reg = <0x0000000 0x200000>;
++		read-only;
++	};
++
++	partition@200000 {
++		label = "uImage";
++		reg = <0x200000 0x300000>;
++	};
++
++	partition@500000 {
++		label = "uImage2";
++		reg = <0x500000 0x300000>;
++	};
++
++	partition@800000 {
++		label = "failsafe";
++		reg = <0x800000 0x800000>;
++	};
++
++	partition@1000000 {
++		label = "root";
++		reg = <0x1000000 0x7000000>;
++	};
++};
++
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+--- a/arch/arm/boot/dts/Makefile	2015-01-29 17:41:03.000000000 -0800
++++ b/arch/arm/boot/dts/Makefile	2015-02-05 14:20:01.000000000 -0800
+@@ -120,6 +120,7 @@
+ 	kirkwood-ds411.dtb \
+ 	kirkwood-ds411j.dtb \
+ 	kirkwood-ds411slim.dtb \
++	kirkwood-goflexhome.dtb \
+ 	kirkwood-goflexnet.dtb \
+ 	kirkwood-guruplug-server-plus.dtb \
+ 	kirkwood-ib62x0.dtb \
+@@ -142,11 +143,15 @@
+ 	kirkwood-ns2mini.dtb \
+ 	kirkwood-nsa310.dtb \
+ 	kirkwood-nsa310a.dtb \
++        kirkwood-nsa320.dtb \
++        kirkwood-nsa325.dtb \
+ 	kirkwood-openblocks_a6.dtb \
+ 	kirkwood-openblocks_a7.dtb \
+ 	kirkwood-openrd-base.dtb \
+ 	kirkwood-openrd-client.dtb \
+ 	kirkwood-openrd-ultimate.dtb \
++	kirkwood-pogo_e02.dtb \
++        kirkwood-pogoplug_v4.dtb \
+ 	kirkwood-rd88f6192.dtb \
+ 	kirkwood-rd88f6281-z0.dtb \
+ 	kirkwood-rd88f6281-a.dtb \
+diff -Naur a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
+--- a/arch/arm/plat-orion/common.c	2015-01-29 17:41:03.000000000 -0800
++++ b/arch/arm/plat-orion/common.c	2015-02-05 14:04:01.000000000 -0800
+@@ -257,7 +257,9 @@
+ /*****************************************************************************
+  * GE00
+  ****************************************************************************/
+-static struct mv643xx_eth_shared_platform_data orion_ge00_shared_data;
++struct mv643xx_eth_shared_platform_data orion_ge00_shared_data = {
++	.tx_csum_limit	= 1600,
++};
+ 
+ static struct resource orion_ge00_shared_resources[] = {
+ 	{
+diff -Naur a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
+--- a/arch/arm/tools/mach-types	2015-01-29 17:41:03.000000000 -0800
++++ b/arch/arm/tools/mach-types	2015-02-05 14:04:01.000000000 -0800
+@@ -1007,3 +1007,12 @@
+ eukrea_cpuimx28sd	MACH_EUKREA_CPUIMX28SD	EUKREA_CPUIMX28SD	4573
+ domotab			MACH_DOMOTAB		DOMOTAB			4574
+ pfla03			MACH_PFLA03		PFLA03			4575
++goflexnet		MACH_GOFLEXNET		GOFLEXNET		3089
++goflexhome		MACH_GOFLEXHOME		GOFLEXHOME		3338
++iconnect		MACH_ICONNECT		ICONNECT		2870
++pogo_e02		MACH_POGO_E02		POGO_E02		3542
++nsa320			MACH_NSA320		NSA320			3956
++pogoplugv4		MACH_POGOPLUGV4		POGOPLUGV4		3960
++pogoplugv3		MACH_POGOPLUGV3		POGOPLUGV3		3973
++pogoplugv3pci		MACH_POGOPLUGV3PCI	POGOPLUGV3PCI		3976
++nsa310			MACH_NSA310		NSA310			4022
+diff -Naur a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+--- a/drivers/ata/sata_mv.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/ata/sata_mv.c	2015-02-05 14:04:01.000000000 -0800
+@@ -1,6 +1,7 @@
+ /*
+  * sata_mv.c - Marvell SATA support
+  *
++ * Copyright 2013 bodhi <mibodhi@gmail.com>
+  * Copyright 2008-2009: Marvell Corporation, all rights reserved.
+  * Copyright 2005: EMC Corporation, all rights reserved.
+  * Copyright 2005 Red Hat, Inc.  All rights reserved.
+@@ -72,6 +73,7 @@
+ #include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi_device.h>
+ #include <linux/libata.h>
++#include <linux/leds.h>
+ 
+ #define DRV_NAME	"sata_mv"
+ #define DRV_VERSION	"1.28"
+@@ -1170,6 +1172,8 @@
+ {
+ 	int want_ncq = (protocol == ATA_PROT_NCQ);
+ 
++        ledtrig_ide_activity(ap->port_no);
++
+ 	if (pp->pp_flags & MV_PP_FLAG_EDMA_EN) {
+ 		int using_ncq = ((pp->pp_flags & MV_PP_FLAG_NCQ_EN) != 0);
+ 		if (want_ncq != using_ncq)
+diff -Naur a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+--- a/drivers/hwmon/Kconfig	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/hwmon/Kconfig	2015-02-05 14:04:01.000000000 -0800
+@@ -1680,6 +1680,19 @@
+ 	  This driver provides support for the Ultra45 workstation environmental
+ 	  sensors.
+ 
++config SENSORS_NSA3XX
++	tristate "ZyXEL NSA3xx fan speed and temperature sensors"
++	depends on (MACH_NSA310 || MACH_NSA320) && GPIOLIB
++	help
++	  If you say yes here you get support for hardware monitoring
++	  for the ZyXEL NSA3XX Media Servers.
++
++	  The sensor data is taken from a Holtek HT46R065 microcontroller
++	  connected to GPIO lines.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called nsa3xx-hwmon.
++
+ if ACPI
+ 
+ comment "ACPI drivers"
+diff -Naur a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+--- a/drivers/hwmon/Makefile	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/hwmon/Makefile	2015-02-05 14:04:01.000000000 -0800
+@@ -114,6 +114,7 @@
+ obj-$(CONFIG_SENSORS_MAX6650)	+= max6650.o
+ obj-$(CONFIG_SENSORS_MAX6697)	+= max6697.o
+ obj-$(CONFIG_SENSORS_MC13783_ADC)+= mc13783-adc.o
++obj-$(CONFIG_SENSORS_NSA3XX)	+= nsa3xx-hwmon.o
+ obj-$(CONFIG_SENSORS_MCP3021)	+= mcp3021.o
+ obj-$(CONFIG_SENSORS_MENF21BMC_HWMON) += menf21bmc_hwmon.o
+ obj-$(CONFIG_SENSORS_NCT6683)	+= nct6683.o
+diff -Naur a/drivers/hwmon/nsa3xx-hwmon.c b/drivers/hwmon/nsa3xx-hwmon.c
+--- a/drivers/hwmon/nsa3xx-hwmon.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/hwmon/nsa3xx-hwmon.c	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,251 @@
++/*
++ * drivers/hwmon/nsa3xx-hwmon.c
++ *
++ * ZyXEL NSA3xx Media Servers
++ * hardware monitoring
++ *
++ * Copyright (C) 2012 Peter Schildmann <linux@schildmann.info>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License v2 as published by the
++ * Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
++ */
++
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/gpio.h>
++#include <linux/hwmon.h>
++#include <linux/hwmon-sysfs.h>
++#include <linux/nsa3xx-hwmon.h>
++#include <linux/slab.h>
++#include <linux/jiffies.h>
++#include <linux/delay.h>
++#include <asm/delay.h>
++
++#define MAGIC_NUMBER 0x55
++
++struct nsa3xx_hwmon {
++	struct platform_device	*pdev;
++	struct device		*classdev;
++	struct mutex		update_lock;	/* lock GPIO operations */
++	unsigned long		last_updated;	/* jiffies */
++	unsigned long		mcu_data;
++};
++
++enum nsa3xx_inputs {
++	NSA3XX_FAN = 1,
++	NSA3XX_TEMP = 0,
++};
++
++static const char *nsa3xx_input_names[] = {
++	[NSA3XX_FAN] = "Chassis Fan",
++	[NSA3XX_TEMP] = "System Temperature",
++};
++
++static unsigned long nsa3xx_hwmon_update(struct device *dev)
++{
++	int i;
++	unsigned long mcu_data;
++	struct nsa3xx_hwmon *hwmon = dev_get_drvdata(dev);
++	struct nsa3xx_hwmon_platform_data *pdata = hwmon->pdev->dev.platform_data;
++
++	mutex_lock(&hwmon->update_lock);
++
++	mcu_data = hwmon->mcu_data;
++
++	if (time_after(jiffies, hwmon->last_updated + (3 * HZ)) || mcu_data == 0) {
++		dev_dbg(dev, "Reading MCU data\n");
++
++		gpio_set_value(pdata->act_pin, 0);
++		msleep(100);
++
++		for (i = 31; i >= 0; i--) {
++			gpio_set_value(pdata->clk_pin, 0);
++			udelay(100);
++
++			gpio_set_value(pdata->clk_pin, 1);
++			udelay(100);
++
++			mcu_data |= gpio_get_value(pdata->data_pin) ? (1 << i) : 0;
++		}
++
++		gpio_set_value(pdata->act_pin, 1);
++
++		if ((mcu_data & 0xff000000) != (MAGIC_NUMBER << 24)) {
++			dev_err(dev, "Failed to read MCU data\n");
++			mcu_data = 0;
++		}
++
++		hwmon->mcu_data = mcu_data;
++		hwmon->last_updated = jiffies;
++	}
++
++	mutex_unlock(&hwmon->update_lock);
++
++	return mcu_data;
++}
++
++static ssize_t show_name(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "nsa3xx\n");
++}
++
++static ssize_t show_label(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	int channel = to_sensor_dev_attr(attr)->index;
++	return sprintf(buf, "%s\n", nsa3xx_input_names[channel]);
++}
++
++static ssize_t show_value(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	int channel = to_sensor_dev_attr(attr)->index;
++	unsigned long mcu_data = nsa3xx_hwmon_update(dev);
++	unsigned long value = 0;
++	switch(channel) {
++	case NSA3XX_TEMP:
++		value = (mcu_data & 0xffff) * 100;
++		break;
++	case NSA3XX_FAN:
++		value = ((mcu_data & 0xff0000) >> 16) * 100;
++		break;
++	}
++	return sprintf(buf, "%lu\n", value);
++}
++
++static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
++static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_label, NULL, NSA3XX_TEMP);
++static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_value, NULL, NSA3XX_TEMP);
++static SENSOR_DEVICE_ATTR(fan1_label, S_IRUGO, show_label, NULL, NSA3XX_FAN);
++static SENSOR_DEVICE_ATTR(fan1_input, S_IRUGO, show_value, NULL, NSA3XX_FAN);
++
++static struct attribute *nsa3xx_attributes[] = {
++	&dev_attr_name.attr,
++	&sensor_dev_attr_temp1_label.dev_attr.attr,
++	&sensor_dev_attr_temp1_input.dev_attr.attr,
++	&sensor_dev_attr_fan1_label.dev_attr.attr,
++	&sensor_dev_attr_fan1_input.dev_attr.attr,
++	NULL
++};
++
++static const struct attribute_group nsa3xx_attr_group = {
++	.attrs	= nsa3xx_attributes,
++};
++
++static int nsa3xx_hwmon_request_gpios(struct nsa3xx_hwmon_platform_data *pdata)
++{
++	int ret;
++
++	if ((ret = gpio_request(pdata->act_pin, "act pin")))
++		return ret;
++
++	if ((ret = gpio_request(pdata->clk_pin, "clk pin")))
++		return ret;
++
++	if ((ret = gpio_request(pdata->data_pin, "data pin")))
++		return ret;
++
++	if ((ret = gpio_direction_output(pdata->act_pin, 1)))
++		return ret;
++
++	if ((ret = gpio_direction_output(pdata->clk_pin, 1)))
++		return ret;
++
++	if ((ret = gpio_direction_input(pdata->data_pin)))
++		return ret;
++
++	return 0;
++}
++
++static void nsa3xx_hwmon_free_gpios(struct nsa3xx_hwmon_platform_data *pdata)
++{
++	gpio_free(pdata->act_pin);
++	gpio_free(pdata->clk_pin);
++	gpio_free(pdata->data_pin);
++}
++
++static int nsa3xx_hwmon_probe(struct platform_device *pdev)
++{
++	int ret;
++	struct nsa3xx_hwmon *hwmon;
++	struct nsa3xx_hwmon_platform_data *pdata = pdev->dev.platform_data;
++
++	hwmon = kzalloc(sizeof(struct nsa3xx_hwmon), GFP_KERNEL);
++	if (!hwmon)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, hwmon);
++	hwmon->pdev = pdev;
++	hwmon->mcu_data = 0;
++	mutex_init(&hwmon->update_lock);
++
++	ret = sysfs_create_group(&pdev->dev.kobj, &nsa3xx_attr_group);
++	if (ret)
++		goto err;
++
++	hwmon->classdev = hwmon_device_register(&pdev->dev);
++	if (IS_ERR(hwmon->classdev)) {
++		ret = PTR_ERR(hwmon->classdev);
++		goto err_sysfs;
++	}
++
++	ret = nsa3xx_hwmon_request_gpios(pdata);
++	if (ret)
++		goto err_free_gpio;
++
++	dev_info(&pdev->dev, "initialized\n");
++
++	return 0;
++
++err_free_gpio:
++	nsa3xx_hwmon_free_gpios(pdata);
++	hwmon_device_unregister(hwmon->classdev);
++err_sysfs:
++	sysfs_remove_group(&pdev->dev.kobj, &nsa3xx_attr_group);
++err:
++	platform_set_drvdata(pdev, NULL);
++	kfree(hwmon);
++	return ret;
++}
++
++static int nsa3xx_hwmon_remove(struct platform_device *pdev)
++{
++	struct nsa3xx_hwmon *hwmon = platform_get_drvdata(pdev);
++
++	nsa3xx_hwmon_free_gpios(pdev->dev.platform_data);
++	hwmon_device_unregister(hwmon->classdev);
++	sysfs_remove_group(&pdev->dev.kobj, &nsa3xx_attr_group);
++	platform_set_drvdata(pdev, NULL);
++	kfree(hwmon);
++
++	return 0;
++}
++
++static struct platform_driver nsa3xx_hwmon_driver = {
++	.probe = nsa3xx_hwmon_probe,
++	.remove = nsa3xx_hwmon_remove,
++	.driver = {
++		.name = "nsa3xx-hwmon",
++		.owner = THIS_MODULE,
++	},
++};
++
++module_platform_driver(nsa3xx_hwmon_driver);
++
++MODULE_AUTHOR("Peter Schildmann <linux@schildmann.info>");
++MODULE_DESCRIPTION("NSA3XX Hardware Monitoring");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:nsa3xx-hwmon");
+diff -Naur a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+--- a/drivers/leds/Kconfig	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/leds/Kconfig	2015-02-05 14:04:01.000000000 -0800
+@@ -505,6 +505,106 @@
+ 	  This option enabled support for the LEDs on the ARM Versatile
+ 	  and RealView boards. Say Y to enabled these.
+ 
++config LEDS_TRIGGERS
++ 	bool "LED Trigger support"
++ 	depends on LEDS_CLASS
++ 	help
++ 	  This option enables trigger support for the leds class.
++ 	  These triggers allow kernel events to drive the LEDs and can
++ 	  be configured via sysfs. If unsure, say Y.
++ 
++ 
++ config LEDS_TRIGGER_TIMER
++ 	tristate "LED Timer Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be controlled by a programmable timer
++ 	  via sysfs. Some LED hardware can be programmed to start
++ 	  blinking the LED without any further software interaction.
++ 	  For more details read Documentation/leds/leds-class.txt.
++ 
++ 	  If unsure, say Y.
++ 
++ config LEDS_TRIGGER_ONESHOT
++ 	tristate "LED One-shot Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to blink in one-shot pulses with parameters
++ 	  controlled via sysfs.  It's useful to notify the user on
++ 	  sporadic events, when there are no clear begin and end trap points,
++ 	  or on dense events, where this blinks the LED at constant rate if
++ 	  rearmed continuously.
++ 
++ 	  It also shows how to use the led_blink_set_oneshot() function.
++ 
++ 	  If unsure, say Y.
++ 
++ config LEDS_TRIGGER_IDE_DISK
++ 	bool "LED IDE Disk Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be controlled by IDE disk activity.
++ 	  If unsure, say Y.
++ 
++ config LEDS_TRIGGER_HEARTBEAT
++ 	tristate "LED Heartbeat Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be controlled by a CPU load average.
++ 	  The flash frequency is a hyperbolic function of the 1-minute
++ 	  load average.
++ 	  If unsure, say Y.
++ 
++ config LEDS_TRIGGER_BACKLIGHT
++ 	tristate "LED backlight Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be controlled as a backlight device: they
++ 	  turn off and on when the display is blanked and unblanked.
++ 
++ 	  If unsure, say N.
++ 
++ config LEDS_TRIGGER_CPU
++ 	bool "LED CPU Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be controlled by active CPUs. This shows
++ 	  the active CPUs across an array of LEDs so you can see which
++ 	  CPUs are active on the system at any given moment.
++ 
++ 	  If unsure, say N.
++ 
++ config LEDS_TRIGGER_GPIO
++ 	tristate "LED GPIO Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	depends on GPIOLIB
++ 	help
++ 	  This allows LEDs to be controlled by gpio events. It's good
++ 	  when using gpios as switches and triggering the needed LEDs
++ 	  from there. One use case is n810's keypad LEDs that could
++ 	  be triggered by this trigger when user slides up to show
++ 	  keypad.
++ 
++ 	  If unsure, say N.
++ 
++ config LEDS_TRIGGER_DEFAULT_ON
++ 	tristate "LED Default ON Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows LEDs to be initialised in the ON state.
++ 	  If unsure, say Y.
++ 
++ comment "iptables trigger is under Netfilter config (LED target)"
++ 	depends on LEDS_TRIGGERS
++ 
++ config LEDS_TRIGGER_TRANSIENT
++ 	tristate "LED Transient Trigger"
++ 	depends on LEDS_TRIGGERS
++ 	help
++ 	  This allows one time activation of a transient state on
++ 	  GPIO/PWM based hardware.
++ 	  If unsure, say Y
++
+ comment "LED Triggers"
+ source "drivers/leds/trigger/Kconfig"
+ 
+diff -Naur a/drivers/leds/trigger/ledtrig-ide-disk.c b/drivers/leds/trigger/ledtrig-ide-disk.c
+--- a/drivers/leds/trigger/ledtrig-ide-disk.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/leds/trigger/ledtrig-ide-disk.c	2015-02-05 14:04:01.000000000 -0800
+@@ -1,8 +1,10 @@
+ /*
+  * LED IDE-Disk Activity Trigger
+  *
+- * Copyright 2006 Openedhand Ltd.
++/* Copyright 2013 bodhi <mibodhi@gmail.com>
+  *
++ * based on
++ * Copyright 2006 Openedhand Ltd.
+  * Author: Richard Purdie <rpurdie@openedhand.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+@@ -18,25 +20,36 @@
+ 
+ #define BLINK_DELAY 30
+ 
+-DEFINE_LED_TRIGGER(ledtrig_ide);
++DEFINE_LED_TRIGGER(ledtrig_ide1);
++DEFINE_LED_TRIGGER(ledtrig_ide2);
+ static unsigned long ide_blink_delay = BLINK_DELAY;
+ 
+-void ledtrig_ide_activity(void)
++void ledtrig_ide_activity(int portno)
+ {
+-	led_trigger_blink_oneshot(ledtrig_ide,
+-				  &ide_blink_delay, &ide_blink_delay, 0);
++	switch (portno) {
++		case 0:
++		        led_trigger_blink_oneshot(ledtrig_ide1, &ide_blink_delay, &ide_blink_delay, 0);
++			break;
++        	case 1:
++			led_trigger_blink_oneshot(ledtrig_ide2, &ide_blink_delay, &ide_blink_delay, 0);
++			break;
++		default:
++			break;
++	}
+ }
+ EXPORT_SYMBOL(ledtrig_ide_activity);
+ 
+ static int __init ledtrig_ide_init(void)
+ {
+-	led_trigger_register_simple("ide-disk", &ledtrig_ide);
++	led_trigger_register_simple("ide-disk1", &ledtrig_ide1); 
++	led_trigger_register_simple("ide-disk2", &ledtrig_ide2);
+ 	return 0;
+ }
+ 
+ static void __exit ledtrig_ide_exit(void)
+ {
+-	led_trigger_unregister_simple(ledtrig_ide);
++	led_trigger_unregister_simple(ledtrig_ide1);
++	led_trigger_unregister_simple(ledtrig_ide2);
+ }
+ 
+ module_init(ledtrig_ide_init);
+diff -Naur a/drivers/media/dvb-frontends/ds3103.c b/drivers/media/dvb-frontends/ds3103.c
+--- a/drivers/media/dvb-frontends/ds3103.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/media/dvb-frontends/ds3103.c	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,1395 @@
++/*
++    Montage Technology DS3103 - DVBS/S2 Demodulator driver
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
++#include <linux/firmware.h>
++
++#include "dvb_frontend.h"
++#include "ds3103.h"
++
++static int debug;
++
++#define dprintk(args...) \
++	do { \
++		if (debug) \
++			printk(args); \
++	} while (0)
++
++#define DS3103_DEFAULT_FIRMWARE "dvb-fe-ds3103.fw"
++
++static u8 ds310x_dvbs_init_tab[] = {
++	0x23, 0x07,
++	0x08, 0x03,
++	0x0c, 0x02,
++	0x21, 0x54,
++	0x25, 0x82,
++	0x27, 0x31,
++	0x30, 0x08,
++	0x31, 0x40,
++	0x32, 0x32,
++	0x33, 0x35,
++	0x35, 0xff,
++	0x3a, 0x00,
++	0x37, 0x10,
++	0x38, 0x10,
++	0x39, 0x02,
++	0x42, 0x60,
++	0x4a, 0x80,
++	0x4b, 0x04,
++	0x4d, 0x91,
++	0x5d, 0xc8,
++	0x50, 0x36,
++	0x51, 0x36,
++	0x52, 0x36,
++	0x53, 0x36,
++	0x63, 0x0f,
++	0x64, 0x30,
++	0x65, 0x40,
++	0x68, 0x26,
++	0x69, 0x4c,
++	0x70, 0x20,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x40,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x60,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x80,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0xa0,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x1f,
++	0x76, 0x38,
++	0x77, 0xa6,
++	0x78, 0x0c,
++	0x79, 0x80,
++	0x7f, 0x14,
++	0x7c, 0x00,
++	0xae, 0x82,
++	0x80, 0x64,
++	0x81, 0x66,
++	0x82, 0x44,
++	0x85, 0x04,
++	0xcd, 0xf4,
++	0x90, 0x33,
++	0xa0, 0x44,
++	0xc0, 0x08,
++	0xc3, 0x10,
++	0xc4, 0x08,
++	0xc5, 0xf0,
++	0xc6, 0xff,
++	0xc7, 0x00,
++	0xc8, 0x1a,
++	0xc9, 0x80,
++	0xe0, 0xf8,
++	0xe6, 0x8b,
++	0xd0, 0x40,
++	0xf8, 0x20,
++	0xfa, 0x0f,
++	0x00, 0x00,
++	0xbd, 0x01,
++	0xb8, 0x00
++};
++
++static u8 ds310x_dvbs2_init_tab[] = {
++	0x23, 0x07,
++	0x08, 0x07,
++	0x0c, 0x02,
++	0x21, 0x54,
++	0x25, 0x82,
++	0x27, 0x31,
++	0x30, 0x08,
++	0x32, 0x32,
++	0x33, 0x35,
++	0x35, 0xff,
++	0x3a, 0x00,
++	0x37, 0x10,
++	0x38, 0x10,
++	0x39, 0x02,
++	0x42, 0x60,
++	0x4a, 0x80,
++	0x4b, 0x04,
++	0x4d, 0x91,
++	0x5d, 0xc8,
++	0x50, 0x36,
++	0x51, 0x36,
++	0x52, 0x36,
++	0x53, 0x36,
++	0x63, 0x0f,
++	0x64, 0x10,
++	0x65, 0x20,
++	0x68, 0x46,
++	0x69, 0xcd,
++	0x70, 0x20,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x40,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x60,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x80,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0xa0,
++	0x71, 0x70,
++	0x72, 0x04,
++	0x73, 0x00,
++	0x70, 0x1f,
++	0x76, 0x38,
++	0x77, 0xa6,
++	0x78, 0x0c,
++	0x79, 0x80,
++	0x7f, 0x14,
++	0x85, 0x08,
++	0xcd, 0xf4,
++	0x90, 0x33,
++	0x86, 0x00,
++	0x87, 0x0f,
++	0x89, 0x00,
++	0x8b, 0x44,
++	0x8c, 0x66,
++	0x9d, 0xc1,
++	0x8a, 0x10,
++	0xad, 0x40,
++	0xa0, 0x44,
++	0xc0, 0x08,
++	0xc1, 0x10,
++	0xc2, 0x08,
++	0xc3, 0x10,
++	0xc4, 0x08,
++	0xc5, 0xf0,
++	0xc6, 0xff,
++	0xc7, 0x00,
++	0xc8, 0x1a,
++	0xc9, 0x80,
++	0xca, 0x23,
++	0xcb, 0x24,
++	0xcc, 0xf4,
++	0xce, 0x74,
++	0x00, 0x00,
++	0xbd, 0x01,
++	0xb8, 0x00
++};
++
++struct ds3103_state {
++	struct i2c_adapter *i2c;
++	const struct ds3103_config *config;
++	struct dvb_frontend frontend;
++	/* previous uncorrected block counter for DVB-S2 */
++	u16 prevUCBS2;
++};
++
++static int ds3103_writereg(struct ds3103_state *state, int reg, int data)
++{
++	u8 buf[] = { reg, data };
++	struct i2c_msg msg = { .addr = state->config->demod_address,
++		.flags = 0, .buf = buf, .len = 2 };
++	int err;
++
++	dprintk("%s: write reg 0x%02x, value 0x%02x\n", __func__, reg, data);
++
++	err = i2c_transfer(state->i2c, &msg, 1);
++	if (err != 1) {
++		printk(KERN_ERR "%s: writereg error(err == %i, reg == 0x%02x,"
++			 " value == 0x%02x)\n", __func__, err, reg, data);
++		return -EREMOTEIO;
++	}
++
++	return 0;
++}
++
++/* I2C write for 8k firmware load */
++static int ds3103_writeFW(struct ds3103_state *state, int reg,
++				const u8 *data, u16 len)
++{
++	int i, ret = -EREMOTEIO;
++	struct i2c_msg msg;
++	u8 *buf;
++
++	buf = kmalloc(33, GFP_KERNEL);
++	if (buf == NULL) {
++		printk(KERN_ERR "Unable to kmalloc\n");
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	*(buf) = reg;
++
++	msg.addr = state->config->demod_address;
++	msg.flags = 0;
++	msg.buf = buf;
++	msg.len = 33;
++   
++	for (i = 0; i < len; i += 32) {
++		memcpy(buf + 1, data + i, 32);
++
++		dprintk("%s: write reg 0x%02x, len = %d\n", __func__, reg, len);
++
++		ret = i2c_transfer(state->i2c, &msg, 1);
++		if (ret != 1) {
++			printk(KERN_ERR "%s: write error(err == %i, "
++				"reg == 0x%02x\n", __func__, ret, reg);
++			ret = -EREMOTEIO;
++		}
++	}
++
++error:
++	kfree(buf);
++
++	return ret;
++}
++
++static int ds3103_readreg(struct ds3103_state *state, u8 reg)
++{
++	int ret;
++	u8 b0[] = { reg };
++	u8 b1[] = { 0 };
++	struct i2c_msg msg[] = {
++		{
++			.addr = state->config->demod_address,
++			.flags = 0,
++			.buf = b0,
++			.len = 1
++		}, {
++			.addr = state->config->demod_address,
++			.flags = I2C_M_RD,
++			.buf = b1,
++			.len = 1
++		}
++	};
++
++	ret = i2c_transfer(state->i2c, msg, 2);
++
++	if (ret != 2) {
++		printk(KERN_ERR "%s: reg=0x%x(error=%d)\n", __func__, reg, ret);
++		return ret;
++	}
++
++	dprintk("%s: read reg 0x%02x, value 0x%02x\n", __func__, reg, b1[0]);
++
++	return b1[0];
++}
++
++static int ds3103_i2c_gate_ctrl(struct dvb_frontend *fe, int enable)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	
++	if (enable)
++		ds3103_writereg(state, 0x03, 0x12);
++	else
++		ds3103_writereg(state, 0x03, 0x02);
++	
++	return 0;
++}
++static int ds3103_load_firmware(struct dvb_frontend *fe,
++					const struct firmware *fw);
++
++static int ds3103_firmware_ondemand(struct dvb_frontend *fe)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	const struct firmware *fw;
++	int ret = 0;
++
++	dprintk("%s()\n", __func__);
++
++	if (ds3103_readreg(state, 0xb2) <= 0)
++		return ret;
++
++	/* global reset, global diseqc reset, global fec reset */
++	ds3103_writereg(state, 0x07, 0xe0);
++	ds3103_writereg(state, 0x07, 0x00);
++
++	/* request the firmware, this will block until someone uploads it */
++	printk(KERN_INFO "%s: Waiting for firmware upload (%s)...\n", __func__,
++				DS3103_DEFAULT_FIRMWARE);
++	ret = request_firmware(&fw, DS3103_DEFAULT_FIRMWARE,
++				state->i2c->dev.parent);
++	printk(KERN_INFO "%s: Waiting for firmware upload(2)...\n", __func__);
++	if (ret) {
++		printk(KERN_ERR "%s: No firmware uploaded (timeout or file not "
++				"found?)\n", __func__);
++		return ret;
++	}
++
++	ret = ds3103_load_firmware(fe, fw);
++	if (ret)
++		printk("%s: Writing firmware to device failed\n", __func__);
++
++	release_firmware(fw);
++
++	dprintk("%s: Firmware upload %s\n", __func__,
++			ret == 0 ? "complete" : "failed");
++
++	return ret;
++}
++
++static int ds3103_load_firmware(struct dvb_frontend *fe,
++					const struct firmware *fw)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++
++	dprintk("%s\n", __func__);
++	dprintk("Firmware is %zu bytes (%02x %02x .. %02x %02x)\n",
++			fw->size,
++			fw->data[0],
++			fw->data[1],
++			fw->data[fw->size - 2],
++			fw->data[fw->size - 1]);
++
++	/* Begin the firmware load process */
++	ds3103_writereg(state, 0xb2, 0x01);
++	/* write the entire firmware */
++	ds3103_writeFW(state, 0xb0, fw->data, fw->size);
++	ds3103_writereg(state, 0xb2, 0x00);
++
++	return 0;
++}
++
++static int ds3103_set_voltage(struct dvb_frontend *fe, fe_sec_voltage_t voltage)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	u8 data;
++
++	dprintk("%s(%d)\n", __func__, voltage);
++
++	data = ds3103_readreg(state, 0xa2);
++	data |= 0x03; /* bit0 V/H, bit1 off/on */
++
++	switch (voltage) {
++	case SEC_VOLTAGE_18:
++		data &= ~0x03;
++		break;
++	case SEC_VOLTAGE_13:
++		data &= ~0x03;
++		data |= 0x01;
++		break;
++	case SEC_VOLTAGE_OFF:
++		break;
++	}
++
++	ds3103_writereg(state, 0xa2, data);
++
++	return 0;
++}
++
++static int ds3103_read_status(struct dvb_frontend *fe, fe_status_t* status)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++	int lock;
++
++	*status = 0;
++
++	switch (c->delivery_system) {
++	case SYS_DVBS:
++		lock = ds3103_readreg(state, 0xd1);
++		if ((lock & 0x07) == 0x07)
++			*status = FE_HAS_SIGNAL | FE_HAS_CARRIER |
++				FE_HAS_VITERBI | FE_HAS_SYNC |
++				FE_HAS_LOCK;
++
++		break;
++	case SYS_DVBS2:
++		lock = ds3103_readreg(state, 0x0d);
++		if ((lock & 0x8f) == 0x8f)
++			*status = FE_HAS_SIGNAL | FE_HAS_CARRIER |
++				FE_HAS_VITERBI | FE_HAS_SYNC |
++				FE_HAS_LOCK;
++
++		break;
++	default:
++		return 1;
++	}
++
++	if (state->config->set_lock_led)
++		state->config->set_lock_led(fe, *status == 0 ? 0 : 1);
++
++	dprintk("%s: status = 0x%02x\n", __func__, lock);
++
++	return 0;
++}
++
++/* read DS3103 BER value */
++static int ds3103_read_ber(struct dvb_frontend *fe, u32* ber)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++	u8 data;
++	u32 ber_reading, lpdc_frames;
++
++	dprintk("%s()\n", __func__);
++
++	switch (c->delivery_system) {
++	case SYS_DVBS:
++		/* set the number of bytes checked during
++		BER estimation */
++		ds3103_writereg(state, 0xf9, 0x04);
++		/* read BER estimation status */
++		data = ds3103_readreg(state, 0xf8);
++		/* check if BER estimation is ready */
++		if ((data & 0x10) == 0) {
++			/* this is the number of error bits,
++			to calculate the bit error rate
++			divide to 8388608 */
++			*ber = (ds3103_readreg(state, 0xf7) << 8) |
++				ds3103_readreg(state, 0xf6);
++			/* start counting error bits */
++			/* need to be set twice
++			otherwise it fails sometimes */
++			data |= 0x10;
++			ds3103_writereg(state, 0xf8, data);
++			ds3103_writereg(state, 0xf8, data);
++		} else
++			/* used to indicate that BER estimation
++			is not ready, i.e. BER is unknown */
++			*ber = 0xffffffff;
++		break;
++	case SYS_DVBS2:
++		/* read the number of LPDC decoded frames */
++		lpdc_frames = (ds3103_readreg(state, 0xd7) << 16) |
++				(ds3103_readreg(state, 0xd6) << 8) |
++				ds3103_readreg(state, 0xd5);
++		/* read the number of packets with bad CRC */
++		ber_reading = (ds3103_readreg(state, 0xf8) << 8) |
++				ds3103_readreg(state, 0xf7);
++		if (lpdc_frames > 750) {
++			/* clear LPDC frame counters */
++			ds3103_writereg(state, 0xd1, 0x01);
++			/* clear bad packets counter */
++			ds3103_writereg(state, 0xf9, 0x01);
++			/* enable bad packets counter */
++			ds3103_writereg(state, 0xf9, 0x00);
++			/* enable LPDC frame counters */
++			ds3103_writereg(state, 0xd1, 0x00);
++			*ber = ber_reading;
++		} else
++			/* used to indicate that BER estimation is not ready,
++			i.e. BER is unknown */
++			*ber = 0xffffffff;
++		break;
++	default:
++		return 1;
++	}
++
++	return 0;
++}
++
++/* calculate DS3103 snr value in dB */
++static int ds3103_read_snr(struct dvb_frontend *fe, u16 *snr)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++	u8 snr_reading, snr_value;
++	u32 dvbs2_signal_reading, dvbs2_noise_reading, tmp;
++	static const u16 dvbs_snr_tab[] = { /* 20 x Table (rounded up) */
++		0x0000, 0x1b13, 0x2aea, 0x3627, 0x3ede, 0x45fe, 0x4c03,
++		0x513a, 0x55d4, 0x59f2, 0x5dab, 0x6111, 0x6431, 0x6717,
++		0x69c9, 0x6c4e, 0x6eac, 0x70e8, 0x7304, 0x7505
++	};
++	static const u16 dvbs2_snr_tab[] = { /* 80 x Table (rounded up) */
++		0x0000, 0x0bc2, 0x12a3, 0x1785, 0x1b4e, 0x1e65, 0x2103,
++		0x2347, 0x2546, 0x2710, 0x28ae, 0x2a28, 0x2b83, 0x2cc5,
++		0x2df1, 0x2f09, 0x3010, 0x3109, 0x31f4, 0x32d2, 0x33a6,
++		0x3470, 0x3531, 0x35ea, 0x369b, 0x3746, 0x37ea, 0x3888,
++		0x3920, 0x39b3, 0x3a42, 0x3acc, 0x3b51, 0x3bd3, 0x3c51,
++		0x3ccb, 0x3d42, 0x3db6, 0x3e27, 0x3e95, 0x3f00, 0x3f68,
++		0x3fcf, 0x4033, 0x4094, 0x40f4, 0x4151, 0x41ac, 0x4206,
++		0x425e, 0x42b4, 0x4308, 0x435b, 0x43ac, 0x43fc, 0x444a,
++		0x4497, 0x44e2, 0x452d, 0x4576, 0x45bd, 0x4604, 0x4649,
++		0x468e, 0x46d1, 0x4713, 0x4755, 0x4795, 0x47d4, 0x4813,
++		0x4851, 0x488d, 0x48c9, 0x4904, 0x493f, 0x4978, 0x49b1,
++		0x49e9, 0x4a20, 0x4a57
++	};
++
++	dprintk("%s()\n", __func__);
++
++	switch (c->delivery_system) {
++	case SYS_DVBS:
++		snr_reading = ds3103_readreg(state, 0xff);
++		snr_reading /= 8;
++		if (snr_reading == 0)
++			*snr = 0x0000;
++		else {
++			if (snr_reading > 20)
++				snr_reading = 20;
++			snr_value = dvbs_snr_tab[snr_reading - 1] * 10 / 23026;
++			/* cook the value to be suitable for szap-s2
++			human readable output */
++			*snr = snr_value * 8 * 655;
++		}
++		dprintk("%s: raw / cooked = 0x%02x / 0x%04x\n", __func__,
++				snr_reading, *snr);
++		break;
++	case SYS_DVBS2:
++		dvbs2_noise_reading = (ds3103_readreg(state, 0x8c) & 0x3f) +
++				(ds3103_readreg(state, 0x8d) << 4);
++		dvbs2_signal_reading = ds3103_readreg(state, 0x8e);
++		tmp = dvbs2_signal_reading * dvbs2_signal_reading >> 1;
++		if (tmp == 0) {
++			*snr = 0x0000;
++			return 0;
++		}
++		if (dvbs2_noise_reading == 0) {
++			snr_value = 0x0013;
++			/* cook the value to be suitable for szap-s2
++			human readable output */
++			*snr = 0xffff;
++			return 0;
++		}
++		if (tmp > dvbs2_noise_reading) {
++			snr_reading = tmp / dvbs2_noise_reading;
++			if (snr_reading > 80)
++				snr_reading = 80;
++			snr_value = dvbs2_snr_tab[snr_reading - 1] / 1000;
++			/* cook the value to be suitable for szap-s2
++			human readable output */
++			*snr = snr_value * 5 * 655;
++		} else {
++			snr_reading = dvbs2_noise_reading / tmp;
++			if (snr_reading > 80)
++				snr_reading = 80;
++			*snr = -(dvbs2_snr_tab[snr_reading] / 1000);
++		}
++		dprintk("%s: raw / cooked = 0x%02x / 0x%04x\n", __func__,
++				snr_reading, *snr);
++		break;
++	default:
++		return 1;
++	}
++
++	return 0;
++}
++
++/* read DS3103 uncorrected blocks */
++static int ds3103_read_ucblocks(struct dvb_frontend *fe, u32 *ucblocks)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++	u8 data;
++	u16 _ucblocks;
++
++	dprintk("%s()\n", __func__);
++
++	switch (c->delivery_system) {
++	case SYS_DVBS:
++		*ucblocks = (ds3103_readreg(state, 0xf5) << 8) |
++				ds3103_readreg(state, 0xf4);
++		data = ds3103_readreg(state, 0xf8);
++		/* clear packet counters */
++		data &= ~0x20;
++		ds3103_writereg(state, 0xf8, data);
++		/* enable packet counters */
++		data |= 0x20;
++		ds3103_writereg(state, 0xf8, data);
++		break;
++	case SYS_DVBS2:
++		_ucblocks = (ds3103_readreg(state, 0xe2) << 8) |
++				ds3103_readreg(state, 0xe1);
++		if (_ucblocks > state->prevUCBS2)
++			*ucblocks = _ucblocks - state->prevUCBS2;
++		else
++			*ucblocks = state->prevUCBS2 - _ucblocks;
++		state->prevUCBS2 = _ucblocks;
++		break;
++	default:
++		return 1;
++	}
++
++	return 0;
++}
++
++static int ds3103_set_tone(struct dvb_frontend *fe, fe_sec_tone_mode_t tone)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	u8 data;
++
++	dprintk("%s(%d)\n", __func__, tone);
++	if ((tone != SEC_TONE_ON) && (tone != SEC_TONE_OFF)) {
++		printk(KERN_ERR "%s: Invalid, tone=%d\n", __func__, tone);
++		return -EINVAL;
++	}
++
++	data = ds3103_readreg(state, 0xa2);
++	data &= ~0xc0;
++	ds3103_writereg(state, 0xa2, data);
++
++	switch (tone) {
++	case SEC_TONE_ON:
++		dprintk("%s: setting tone on\n", __func__);
++		data = ds3103_readreg(state, 0xa1);
++		data &= ~0x43;
++		data |= 0x04;
++		ds3103_writereg(state, 0xa1, data);
++		break;
++	case SEC_TONE_OFF:
++		dprintk("%s: setting tone off\n", __func__);
++		data = ds3103_readreg(state, 0xa2);
++		data |= 0x80;
++		ds3103_writereg(state, 0xa2, data);
++		break;
++	}
++
++	return 0;
++}
++
++static int ds3103_send_diseqc_msg(struct dvb_frontend *fe,
++				struct dvb_diseqc_master_cmd *d)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	int i;
++	u8 data;
++
++	/* Dump DiSEqC message */
++	dprintk("%s(", __func__);
++	for (i = 0 ; i < d->msg_len;) {
++		dprintk("0x%02x", d->msg[i]);
++		if (++i < d->msg_len)
++			dprintk(", ");
++	}
++
++	/* enable DiSEqC message send pin */
++	data = ds3103_readreg(state, 0xa2);
++	data &= ~0xc0;
++	data &= ~0x20;
++	ds3103_writereg(state, 0xa2, data);
++
++	/* DiSEqC message */
++	for (i = 0; i < d->msg_len; i++)
++		ds3103_writereg(state, 0xa3 + i, d->msg[i]);
++
++	data = ds3103_readreg(state, 0xa1);
++	/* clear DiSEqC message length and status,
++	enable DiSEqC message send */
++	data &= ~0xf8;
++	/* set DiSEqC mode, modulation active during 33 pulses,
++	set DiSEqC message length */
++	data |= ((d->msg_len - 1) << 3) | 0x07;
++	ds3103_writereg(state, 0xa1, data);
++
++	/* wait up to 150ms for DiSEqC transmission to complete */
++	for (i = 0; i < 15; i++) {
++		data = ds3103_readreg(state, 0xa1);
++		if ((data & 0x40) == 0)
++			break;
++		msleep(10);
++	}
++
++	/* DiSEqC timeout after 150ms */
++	if (i == 15) {
++		data = ds3103_readreg(state, 0xa1);
++		data &= ~0x80;
++		data |= 0x40;
++		ds3103_writereg(state, 0xa1, data);
++
++		data = ds3103_readreg(state, 0xa2);
++		data &= ~0xc0;
++		data |= 0x80;
++		ds3103_writereg(state, 0xa2, data);
++
++		return 1;
++	}
++
++	data = ds3103_readreg(state, 0xa2);
++	data &= ~0xc0;
++	data |= 0x80;
++	ds3103_writereg(state, 0xa2, data);
++
++	return 0;
++}
++
++/* Send DiSEqC burst */
++static int ds3103_diseqc_send_burst(struct dvb_frontend *fe,
++					fe_sec_mini_cmd_t burst)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	int i;
++	u8 data;
++
++	dprintk("%s()\n", __func__);
++
++	data = ds3103_readreg(state, 0xa2);
++	data &= ~0xc0;
++	data &= ~0x20;
++	ds3103_writereg(state, 0xa2, data);
++
++	/* DiSEqC burst */
++	if (burst == SEC_MINI_A)
++		/* Unmodulated tone burst */
++		ds3103_writereg(state, 0xa1, 0x02);
++	else if (burst == SEC_MINI_B)
++		/* Modulated tone burst */
++		ds3103_writereg(state, 0xa1, 0x01);
++	else
++		return -EINVAL;
++
++	msleep(13);
++	for (i = 0; i < 5; i++) {
++		data = ds3103_readreg(state, 0xa1);
++		if ((data & 0x40) == 0)
++			break;
++		msleep(1);
++	}
++
++	if (i == 5) {
++		data = ds3103_readreg(state, 0xa1);
++		data &= ~0x80;
++		data |= 0x40;
++		ds3103_writereg(state, 0xa1, data);
++
++		data = ds3103_readreg(state, 0xa2);
++		data &= ~0xc0;
++		data |= 0x80;
++		ds3103_writereg(state, 0xa2, data);
++
++		return 1;
++	}
++
++	data = ds3103_readreg(state, 0xa2);
++	data &= ~0xc0;
++	data |= 0x80;
++	ds3103_writereg(state, 0xa2, data);
++
++	return 0;
++}
++
++static void ds3103_release(struct dvb_frontend *fe)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++
++	if (state->config->set_lock_led)
++		state->config->set_lock_led(fe, 0);
++
++	dprintk("%s\n", __func__);
++	kfree(state);
++}
++
++static struct dvb_frontend_ops ds3103_ops;
++
++struct dvb_frontend *ds3103_attach(const struct ds3103_config *config,
++				    struct i2c_adapter *i2c)
++{
++	struct ds3103_state *state = NULL;
++	int ret;
++	u8 val_01, val_02, val_b2;
++
++
++	dprintk("%s\n", __func__);
++
++	/* allocate memory for the internal state */
++	state = kzalloc(sizeof(struct ds3103_state), GFP_KERNEL);
++	if (state == NULL) {
++		printk(KERN_ERR "Unable to kmalloc\n");
++		goto error2;
++	}
++
++	state->config = config;
++	state->i2c = i2c;
++	state->prevUCBS2 = 0;
++
++	/* check if the demod is present */
++	ret = ds3103_readreg(state, 0x00) & 0xfe;
++	if (ret != 0xe0) {
++		printk(KERN_ERR "Invalid probe, probably not a DS3x0x\n");
++		goto error3;
++	}
++
++	/* check demod chip ID */
++	val_01 = ds3103_readreg(state, 0x01);
++	val_02 = ds3103_readreg(state, 0x02);
++	val_b2 = ds3103_readreg(state, 0xb2);
++	if((val_02 == 0x00) &&
++			(val_01 == 0xD0) && ((val_b2 & 0xC0) == 0xC0)) {
++		printk("\tChip ID = [DS3103]!\n");
++	} else if((val_02 == 0x00) &&
++			(val_01 == 0xD0) && ((val_b2 & 0xC0) == 0x00)) {
++		printk("\tChip ID = [DS3002B]!\n");
++	} else if ((val_02 == 0x00) && (val_01 == 0xC0)) {
++		printk("\tChip ID = [DS300X]! Not supported by this module\n");
++		goto error3;
++	} else {
++		printk("\tChip ID = unknow!\n");
++		goto error3;
++	}
++
++	printk(KERN_INFO "DS3103 chip version: %d.%d attached.\n", val_02, val_01);
++
++	memcpy(&state->frontend.ops, &ds3103_ops,
++			sizeof(struct dvb_frontend_ops));
++	state->frontend.demodulator_priv = state;
++	return &state->frontend;
++
++error3:
++	kfree(state);
++error2:
++	return NULL;
++}
++EXPORT_SYMBOL(ds3103_attach);
++
++static int ds3103_set_carrier_offset(struct dvb_frontend *fe,
++					s32 carrier_offset_khz,
++					u32 target_mclk)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	s32 tmp;
++
++	tmp = carrier_offset_khz;
++	tmp *= 65536;
++	tmp = (2 * tmp + target_mclk) / (2 * target_mclk);
++
++	if (tmp < 0)
++		tmp += 65536;
++
++	ds3103_writereg(state, 0x5f, tmp >> 8);
++	ds3103_writereg(state, 0x5e, tmp & 0xff);
++
++	return 0;
++}
++static int ds3103_set_ts_div(struct ds3103_state *state, u8 tmp1, u8 tmp2)
++{
++	u8 buf;
++	tmp1 -= 1;
++	tmp2 -= 1;
++
++	tmp1 &= 0x3f;
++	tmp2 &= 0x3f;
++
++	buf = ds3103_readreg(state, 0xfe);
++	buf &= 0xf0;
++	buf |= (tmp1 >> 2) & 0x0f;
++	ds3103_writereg(state, 0xfe, buf);
++
++	buf = (u8)((tmp1 & 0x03) << 6);
++	buf |= tmp2;
++	ds3103_writereg(state, 0xea, buf);
++
++	return 0;
++}
++
++u32 ds3103_get_mclk(struct ds3103_state *state)
++{
++	u32 p_mclk_khz = 96000;
++	u8 tmp1, tmp2;
++
++	tmp1 = ds3103_readreg(state, 0x22);
++	tmp2 = ds3103_readreg(state, 0x24);
++
++	tmp1 >>= 6;
++	tmp1 &= 0x03;
++	tmp2 >>= 6;
++	tmp2 &= 0x03;
++
++	if((tmp1 == 0x00) && (tmp2 == 0x01))
++		p_mclk_khz = 144000;
++	else if ((tmp1 == 0x00) && (tmp2 == 0x03))
++		p_mclk_khz = 72000;
++	else if ((tmp1 == 0x01) && (tmp2 == 0x01))
++		p_mclk_khz = 115200;
++	else if ((tmp1 == 0x02) && (tmp2 == 0x01))
++		p_mclk_khz = 96000;
++	else if ((tmp1 == 0x03) && (tmp2 == 0x00))
++		p_mclk_khz = 192000;
++
++	return p_mclk_khz;
++}
++
++static int ds3103_set_clock_ratio(struct ds3103_state *state, u32 target_mclk)
++{
++	struct dvb_frontend *fe = &state->frontend;
++	struct dtv_frontend_properties *p = &fe->dtv_property_cache;
++	u8	mod_fac, tmp1, tmp2;
++	u32	input_datarate;
++	u32 mclk_khz = target_mclk;
++	u16 divid_ratio = 0;
++	u32 sym_rate_kss = p->symbol_rate / 1000;
++
++	if (p->delivery_system == SYS_DVBS2) {
++		switch(p->modulation) {
++		case PSK_8:
++			mod_fac = 3;
++			break;
++		case APSK_16:
++			mod_fac = 4;
++			break;
++		case APSK_32:
++			mod_fac = 5;
++			break;
++		case QPSK:
++		default:
++			mod_fac = 2;
++			break;
++		}
++
++		switch(p->fec_inner) {
++/*		case FEC_1_4:
++ *			input_datarate = sym_rate_kss * mod_fac / 8 / 4;
++ *			break;
++ *		case FEC_1_3:
++ *			input_datarate = sym_rate_kss * mod_fac / 8 / 3;
++ *			break;
++ */
++		case FEC_2_5:
++			input_datarate = sym_rate_kss * mod_fac * 2 / 8 / 5;
++			break;
++		case FEC_1_2:
++			input_datarate = sym_rate_kss * mod_fac / 8 / 2;
++			break;
++		case FEC_3_5:
++			input_datarate = sym_rate_kss * mod_fac * 3 / 8 / 5;
++			break;
++		case FEC_2_3:
++			input_datarate = sym_rate_kss * mod_fac * 2 / 8 / 3;
++			break;
++		case FEC_3_4:
++			input_datarate = sym_rate_kss * mod_fac * 3 / 8 / 4;
++			break;
++		case FEC_4_5:
++			input_datarate = sym_rate_kss * mod_fac * 4 / 8 / 5;
++			break;
++		case FEC_5_6:
++			input_datarate = sym_rate_kss * mod_fac * 5 / 8 / 6;
++			break;
++		case FEC_8_9:
++			input_datarate = sym_rate_kss * mod_fac * 8 / 8 / 9;
++			break;
++		case FEC_9_10:
++			input_datarate = sym_rate_kss * mod_fac * 9 / 8 / 10;
++			break;
++		default:
++			input_datarate = sym_rate_kss * mod_fac * 2 / 8 / 3;
++			break;
++		}
++
++		/* parallel or CI mode for now */
++		if (input_datarate != 0)
++			divid_ratio = mclk_khz / input_datarate;
++		else
++			divid_ratio = 0xff;
++
++		if (divid_ratio > 128)
++			divid_ratio = 128;
++		
++		if (divid_ratio < 2)
++			divid_ratio = 2;
++		
++		tmp1 = divid_ratio / 2;
++		tmp2 = divid_ratio / 2;
++		
++		if ((divid_ratio % 2) != 0)
++			tmp2 += 1;
++
++	} else { /* for dvb-s */
++		mod_fac = 2;
++
++		switch (p->fec_inner) {
++		case FEC_1_2:
++			input_datarate = sym_rate_kss * mod_fac / 2 / 8;
++			break;
++		case FEC_2_3:
++			input_datarate = sym_rate_kss * mod_fac * 2 / 3 / 8;
++			break;
++		case FEC_3_4:
++			input_datarate = sym_rate_kss * mod_fac * 3 / 4 / 8;
++			break;
++		case FEC_5_6:
++			input_datarate = sym_rate_kss * mod_fac * 5 / 6 / 8;
++			break;
++		case FEC_7_8:
++			input_datarate = sym_rate_kss * mod_fac * 7 / 8 / 8;
++			break;
++		default:
++			input_datarate = sym_rate_kss * mod_fac * 3 / 4 / 8;
++			break;
++		}
++
++		if (input_datarate != 0)
++			divid_ratio = mclk_khz / input_datarate;
++		else
++			divid_ratio = 0xff;
++
++		if (divid_ratio > 128)
++			divid_ratio = 128;
++		
++		if (divid_ratio < 2)
++			divid_ratio = 2;
++
++		tmp1 = divid_ratio / 2;
++		tmp2 = divid_ratio / 2;
++
++		if ((divid_ratio % 2) != 0)
++			tmp2 += 1;
++
++	}
++
++	ds3103_set_ts_div(state, tmp1, tmp2);
++
++	return 0;
++}
++
++static int ds3103_set_frontend(struct dvb_frontend *fe)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++
++	int i;
++	fe_status_t status;
++	s32 offset_khz;
++	u32 tuner_freq;
++	u16 value;
++	u32 tmp;
++	u8 tmp1, tmp2;
++	u32 target_mclk = 0;
++
++	dprintk("%s() frec=%d symb=%d", __func__, c->frequency, c->symbol_rate);
++
++	if (state->config->set_ts_params)
++		state->config->set_ts_params(fe, 0);
++
++	if (fe->ops.tuner_ops.set_params)
++		fe->ops.tuner_ops.set_params(fe);
++	
++
++	ds3103_writereg(state, 0xb2, 0x01);
++	ds3103_writereg(state, 0x00, 0x01);
++
++	if (fe->ops.tuner_ops.get_frequency)
++		fe->ops.tuner_ops.get_frequency(fe, &tuner_freq);
++
++	offset_khz = tuner_freq - c->frequency;
++
++	value = ds3103_readreg(state, 0x08);
++
++	switch (c->delivery_system) {
++	case SYS_DVBS2:
++		value |= 0x04;
++		ds3103_writereg(state, 0x08, value);
++		for (i = 0; i < sizeof(ds310x_dvbs2_init_tab); i += 2)
++			ds3103_writereg(state,
++				ds310x_dvbs2_init_tab[i],
++				ds310x_dvbs2_init_tab[i + 1]);
++
++		value = ds3103_readreg(state, 0x4d);
++		value &= ~0x02;
++		ds3103_writereg(state, 0x4d, value);
++		value = ds3103_readreg(state, 0x30);
++		value &= ~0x10;
++		ds3103_writereg(state, 0x30, value);
++		if (c->symbol_rate > 28000000) {
++			target_mclk = 192000;
++		} else if (c->symbol_rate > 18000000) {
++			target_mclk = 144000;
++		} else
++			target_mclk = 96000;
++
++		if (c->symbol_rate <= 5000000) {
++			ds3103_writereg(state, 0xc0, 0x04);
++			ds3103_writereg(state, 0x8a, 0x09);
++			ds3103_writereg(state, 0x8b, 0x22);
++			ds3103_writereg(state, 0x8c, 0x88);
++		}
++
++		break;
++	case SYS_DVBS:
++	default:
++		value &= ~0x04;
++		ds3103_writereg(state, 0x08, value);
++		for (i = 0; i < sizeof(ds310x_dvbs_init_tab); i += 2)
++			ds3103_writereg(state,
++					ds310x_dvbs_init_tab[i],
++					ds310x_dvbs_init_tab[i + 1]);
++		
++		target_mclk = 96000;
++		
++		value = ds3103_readreg(state, 0x4d);
++		value &= ~0x02;
++		ds3103_writereg(state, 0x4d, value);
++		value = ds3103_readreg(state, 0x30);
++		value &= ~0x10;
++		ds3103_writereg(state, 0x30, value);
++		
++		break;
++	}
++
++	ds3103_set_clock_ratio(state, target_mclk);
++
++	tmp1 = ds3103_readreg(state, 0x22);
++	tmp2 = ds3103_readreg(state, 0x24);
++
++	switch (target_mclk) {
++	case 192000:
++		tmp1 |= 0xc0;
++		tmp2 &= 0x3f;
++		break;
++
++	case 144000:
++		tmp1 &= 0x3f;
++		tmp2 &= 0x7f;
++		tmp2 |= 0x40;
++		break;
++
++	case 96000:
++	default:
++		tmp1 &= 0xbf;
++		tmp1 |= 0x80;
++
++		tmp2 &= 0x7f;
++		tmp2 |= 0x40;
++		break;
++	}
++
++	ds3103_writereg(state, 0x22, tmp1);
++	ds3103_writereg(state, 0x24, tmp2);
++
++	ds3103_writereg(state, 0x33, 0x99);
++
++	/* enable 27MHz clock output */
++	value = ds3103_readreg(state, 0x29);
++	value &= 0x80;
++	value &= ~0x10;
++	ds3103_writereg(state, 0x29, value);
++
++	/* enable ac coupling */
++	value = ds3103_readreg(state, 0x25);
++	value |= 0x08;
++	ds3103_writereg(state, 0x25, value);
++
++
++	/* enhance symbol rate performance */
++	if ((c->symbol_rate / 1000) <= 3000) {
++		ds3103_writereg(state, 0xc3, 0x08);
++		ds3103_writereg(state, 0xc8, 0x20);
++		ds3103_writereg(state, 0xc4, 0x08);
++		ds3103_writereg(state, 0xc7, 0x00);
++	} else if((c->symbol_rate / 1000) <= 10000) {
++		ds3103_writereg(state, 0xc3, 0x08);
++		ds3103_writereg(state, 0xc8, 0x10);
++		ds3103_writereg(state, 0xc4, 0x08);
++		ds3103_writereg(state, 0xc7, 0x00);
++	} else {
++		ds3103_writereg(state, 0xc3, 0x08);
++		ds3103_writereg(state, 0xc8, 0x06);
++		ds3103_writereg(state, 0xc4, 0x08);
++		ds3103_writereg(state, 0xc7, 0x00);
++	}
++
++	/* normalized symbol rate rounded to the closest integer */
++	tmp = (((c->symbol_rate / 1000) << 15) + 24000) / 48000;
++
++	ds3103_writereg(state, 0x61, tmp & 0x00ff);
++	ds3103_writereg(state, 0x62, (tmp & 0xff00) >> 8);
++
++	/* co-channel interference cancellation disabled */
++	value = ds3103_readreg(state, 0x56);
++	value &= ~0x01;
++	ds3103_writereg(state, 0x56, value);
++	/* equalizer disabled */
++	value = ds3103_readreg(state, 0x76);
++	value &= ~0x80;
++	ds3103_writereg(state, 0x76, value);
++	/* offset */
++	if ((c->symbol_rate / 1000) < 5000)
++		offset_khz += 3000;
++	ds3103_set_carrier_offset(fe, offset_khz, target_mclk);
++
++	/* ds3000 out of software reset */
++	ds3103_writereg(state, 0x00, 0x00);
++	/* start ds3000 build-in uC */
++	ds3103_writereg(state, 0xb2, 0x00);
++
++
++	for (i = 0; i < 30 ; i++) {
++		ds3103_read_status(fe, &status);
++		if (status && FE_HAS_LOCK)
++			break;
++
++		msleep(10);
++	}
++
++	return 0;
++}
++
++static int ds3103_tune(struct dvb_frontend *fe,
++			bool re_tune,
++			unsigned int mode_flags,
++			unsigned int *delay,
++			fe_status_t *status)
++{
++	if (re_tune) {
++		int ret = ds3103_set_frontend(fe);
++		if (ret)
++			return ret;
++	}
++
++	*delay = HZ / 5;
++
++	return ds3103_read_status(fe, status);
++}
++
++static enum dvbfe_algo ds3103_get_algo(struct dvb_frontend *fe)
++{
++	dprintk("%s()\n", __func__);
++	return DVBFE_ALGO_HW;
++}
++
++/*
++ * Initialize or wake up device
++ *
++ * Power config will reset and load initial firmware if required
++ */
++static int ds3103_initfe(struct dvb_frontend *fe)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++	int ret;
++	u8 buf;
++	u8 val_08;
++
++	dprintk("%s()\n", __func__);
++	/* hard reset */
++	buf = ds3103_readreg(state, 0xb2);
++	if (buf == 0x01) {
++		ds3103_writereg(state, 0x00, 0x00);
++		ds3103_writereg(state, 0xb2, 0x00);
++	}
++
++
++	/* global reset */
++	ds3103_writereg(state, 0x07, 0xe0);
++	ds3103_writereg(state, 0x07, 0x00);
++	ds3103_writereg(state, 0x08, 0x01 | ds3103_readreg(state, 0x08));
++	msleep(1);
++
++	/* Load the firmware if required */
++	ret = ds3103_firmware_ondemand(fe);
++	if (ret != 0) {
++		printk(KERN_ERR "%s: Unable initialize firmware\n", __func__);
++		return ret;
++	}
++	/* ts out mode */
++	val_08 = ds3103_readreg(state, 0x08);
++	buf = ds3103_readreg(state, 0x27);
++	buf &= ~0x01;
++	ds3103_writereg(state, 0x27, buf);
++	/* for dvb-s */
++	buf = val_08 & (~0x04) ;
++	ds3103_writereg(state, 0x08, buf);
++	ds3103_set_ts_div(state, 6, 6);
++
++	/* for dvb-s2 */
++	buf = val_08 | 0x04 ;
++	ds3103_writereg(state, 0x08, buf);
++	ds3103_set_ts_div(state, 8, 9);
++	buf = ds3103_readreg(state, 0xfd);
++	buf |= 0x01;
++	buf &= ~0x04;
++
++	buf &= ~0xba;
++	if (state->config->ci_mode)
++		buf |= 0x40;
++	else
++		buf &= ~0x40;
++
++	ds3103_writereg(state, 0xfd, buf);
++	ds3103_writereg(state, 0x08, val_08);
++	buf = ds3103_readreg(state, 0x27);
++	buf |= 0x11;
++	ds3103_writereg(state, 0x27, buf);
++	buf = ds3103_readreg(state, 0x4d);
++	buf &= ~0x02;
++	ds3103_writereg(state, 0x4d, buf);
++	buf = ds3103_readreg(state, 0x30);
++	buf &= ~0x10;
++	ds3103_writereg(state, 0x30, buf);
++
++	return 0;
++}
++
++/* Put device to sleep */
++static int ds3103_sleep(struct dvb_frontend *fe)
++{
++	struct ds3103_state *state = fe->demodulator_priv;
++
++	if (state->config->set_lock_led)
++		state->config->set_lock_led(fe, 0);
++
++	dprintk("%s()\n", __func__);
++	return 0;
++}
++
++static struct dvb_frontend_ops ds3103_ops = {
++	.delsys = { SYS_DVBS, SYS_DVBS2 },
++	.info = {
++		.name = "Montage Technology DS3103/TS2022",
++		.frequency_min = 950000,
++		.frequency_max = 2150000,
++		.frequency_stepsize = 1011, /* kHz for QPSK frontends */
++		.frequency_tolerance = 5000,
++		.symbol_rate_min = 1000000,
++		.symbol_rate_max = 45000000,
++		.caps = FE_CAN_INVERSION_AUTO |
++			FE_CAN_FEC_1_2 | FE_CAN_FEC_2_3 | FE_CAN_FEC_3_4 |
++			FE_CAN_FEC_4_5 | FE_CAN_FEC_5_6 | FE_CAN_FEC_6_7 |
++			FE_CAN_FEC_7_8 | FE_CAN_FEC_AUTO |
++			FE_CAN_2G_MODULATION |
++			FE_CAN_QPSK | FE_CAN_RECOVER
++	},
++
++	.release = ds3103_release,
++
++	.init = ds3103_initfe,
++	.sleep = ds3103_sleep,
++	.read_status = ds3103_read_status,
++	.read_ber = ds3103_read_ber,
++	.i2c_gate_ctrl = ds3103_i2c_gate_ctrl,
++	.read_snr = ds3103_read_snr,
++	.read_ucblocks = ds3103_read_ucblocks,
++	.set_voltage = ds3103_set_voltage,
++	.set_tone = ds3103_set_tone,
++	.diseqc_send_master_cmd = ds3103_send_diseqc_msg,
++	.diseqc_send_burst = ds3103_diseqc_send_burst,
++	.get_frontend_algo = ds3103_get_algo,
++
++	.set_frontend = ds3103_set_frontend,
++	.tune = ds3103_tune,
++};
++
++module_param(debug, int, 0644);
++MODULE_PARM_DESC(debug, "Activates frontend debugging (default:0)");
++
++MODULE_DESCRIPTION("DVB Frontend module for Montage Technology "
++			"DS3103 hardware");
++MODULE_AUTHOR("Tomazzo Muzumici");
++MODULE_LICENSE("GPL");
++MODULE_FIRMWARE(DS3103_DEFAULT_FIRMWARE);
+diff -Naur a/drivers/media/dvb-frontends/ds3103.h b/drivers/media/dvb-frontends/ds3103.h
+--- a/drivers/media/dvb-frontends/ds3103.h	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/media/dvb-frontends/ds3103.h	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,47 @@
++/*
++    Montage Technology DS3103 - DVBS/S2 Demodulator driver
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++*/
++
++#ifndef DS3103_H
++#define DS3103_H
++
++#include <linux/kconfig.h>
++#include <linux/dvb/frontend.h>
++
++struct ds3103_config {
++	/* the demodulator's i2c address */
++	u8 demod_address;
++	u8 ci_mode;
++	/* Set device param to start dma */
++	int (*set_ts_params)(struct dvb_frontend *fe, int is_punctured);
++	/* Hook for Lock LED */
++	void (*set_lock_led)(struct dvb_frontend *fe, int offon);
++};
++
++#if IS_ENABLED(CONFIG_DVB_DS3103)
++extern struct dvb_frontend *ds3103_attach(const struct ds3103_config *config,
++					struct i2c_adapter *i2c);
++#else
++static inline
++struct dvb_frontend *ds3103_attach(const struct ds3103_config *config,
++					struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif /* CONFIG_DVB_DS3103 */
++#endif /* DS3103_H */
+diff -Naur a/drivers/media/dvb-frontends/Kconfig b/drivers/media/dvb-frontends/Kconfig
+--- a/drivers/media/dvb-frontends/Kconfig	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/media/dvb-frontends/Kconfig	2015-02-05 14:04:01.000000000 -0800
+@@ -244,6 +244,20 @@
+ 	help
+ 	  A DVB-S/S2 tuner module. Say Y when you want to support this frontend.
+ 
++config DVB_TS2022
++	tristate "Montage Tehnology TS2022 based tuners"
++	depends on DVB_CORE && I2C
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  A DVB-S/S2 silicon tuner. Say Y when you want to support this tuner.
++
++config DVB_DS3103
++	tristate "Montage Tehnology DS3103 based"
++	depends on DVB_CORE && I2C
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  A DVB-S/S2 tuner module. Say Y when you want to support this frontend.
++
+ config DVB_MB86A16
+ 	tristate "Fujitsu MB86A16 based"
+ 	depends on DVB_CORE && I2C
+diff -Naur a/drivers/media/dvb-frontends/Makefile b/drivers/media/dvb-frontends/Makefile
+--- a/drivers/media/dvb-frontends/Makefile	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/media/dvb-frontends/Makefile	2015-02-05 16:55:12.000000000 -0800
+@@ -116,3 +116,6 @@
+ obj-$(CONFIG_DVB_AF9033) += af9033.o
+ obj-$(CONFIG_DVB_AS102_FE) += as102_fe.o
+ obj-$(CONFIG_DVB_TC90522) += tc90522.o
++obj-$(CONFIG_DVB_DS3103) += ds3103.o
++obj-$(CONFIG_DVB_TS2022) += ts2022.o
++
+diff -Naur a/drivers/media/dvb-frontends/ts2022.c b/drivers/media/dvb-frontends/ts2022.c
+--- a/drivers/media/dvb-frontends/ts2022.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/media/dvb-frontends/ts2022.c	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,452 @@
++  /*
++     Driver for Montage ts2022 DVBS/S2 Silicon tuner
++
++     Copyright (C) 2012 Tomazzo Muzumici
++
++     This program is free software; you can redistribute it and/or modify
++     it under the terms of the GNU General Public License as published by
++     the Free Software Foundation; either version 2 of the License, or
++     (at your option) any later version.
++
++     This program is distributed in the hope that it will be useful,
++     but WITHOUT ANY WARRANTY; without even the implied warranty of
++     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++
++     GNU General Public License for more details.
++
++     You should have received a copy of the GNU General Public License
++     along with this program; if not, write to the Free Software
++     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++
++  */
++
++#include "dvb_frontend.h"
++#include "ts2022.h"
++
++static int debug;
++#define dprintk(args...) \
++	do { \
++		if (debug) \
++			printk(KERN_DEBUG "ts2022: " args); \
++	} while (0)
++
++#define TS2022_XTAL_FREQ   27000 /* in kHz */
++
++struct ts2022_priv {
++	/* i2c details */
++	int i2c_address;
++	struct i2c_adapter *i2c;
++	u32 frequency;
++};
++
++static int ts2022_release(struct dvb_frontend *fe)
++{
++	kfree(fe->tuner_priv);
++	fe->tuner_priv = NULL;
++	return 0;
++}
++
++static int ts2022_writereg(struct dvb_frontend *fe, int reg, int data)
++{
++	struct ts2022_priv *priv = fe->tuner_priv;
++	u8 buf[] = { reg, data };
++	struct i2c_msg msg[] = {
++		{
++			.addr = priv->i2c_address,
++			.flags = 0,
++			.buf = buf,
++			.len = 2
++		}
++	};
++	int err;
++
++	dprintk("%s: write reg 0x%02x, value 0x%02x\n", __func__, reg, data);
++	
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 1);
++
++	err = i2c_transfer(priv->i2c, msg, 1);
++	if (err != 1) {
++		printk("%s: writereg error(err == %i, reg == 0x%02x,"
++		" value == 0x%02x)\n", __func__, err, reg, data);
++		return -EREMOTEIO;
++	}
++
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 0);
++
++	return 0;
++}
++
++static int ts2022_readreg(struct dvb_frontend *fe, u8 reg)
++{
++	struct ts2022_priv *priv = fe->tuner_priv;
++	int ret;
++	u8 b0[] = { reg };
++	u8 b1[] = { 0 };
++	struct i2c_msg msg[] = {
++		{
++			.addr = priv->i2c_address,
++			.flags = 0,
++			.buf = b0,
++			.len = 1
++		}, {
++			.addr = priv->i2c_address,
++			.flags = I2C_M_RD,
++			.buf = b1,
++			.len = 1
++		}
++	};
++	
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 1);
++
++	ret = i2c_transfer(priv->i2c, msg, 2);
++	
++	if (ret != 2) {
++		printk(KERN_ERR "%s: reg=0x%x(error=%d)\n", __func__, reg, ret);
++		return ret;
++	}
++
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 0);
++
++	dprintk("%s: read reg 0x%02x, value 0x%02x\n", __func__, reg, b1[0]);
++	
++	return b1[0];
++}
++
++static int ts2022_sleep(struct dvb_frontend *fe)
++{
++	struct ts2022_priv *priv = fe->tuner_priv;
++	int ret;
++	u8 buf[] = { 10, 0 };
++	struct i2c_msg msg = {
++		.addr = priv->i2c_address,
++		.flags = 0,
++		.buf = buf,
++		.len = 2
++	};
++
++	dprintk("%s:\n", __func__);
++
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 1);
++
++	ret = i2c_transfer(priv->i2c, &msg, 1);
++	if (ret != 1)
++		dprintk("%s: i2c error\n", __func__);
++
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 0);
++
++	return (ret == 1) ? 0 : ret;
++}
++
++static int ts2022_set_params(struct dvb_frontend *fe)
++{
++	struct ts2022_priv *priv = fe->tuner_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
++	u8 mlpf, mlpf_new, mlpf_max, mlpf_min, nlpf, div4;
++	u16 value, ndiv;
++	u32 f3db;
++
++	dprintk("%s:\n", __func__);
++
++	ts2022_writereg(fe, 0x10, 0x0b);
++	ts2022_writereg(fe, 0x11, 0x40);
++	div4 = 0;
++	if (c->frequency < 1103000) {
++		ts2022_writereg(fe, 0x10, 0x1b);
++		div4 = 1;
++		ndiv = (c->frequency * (6 + 8) * 4)/TS2022_XTAL_FREQ ;
++	} else
++		ndiv = (c->frequency * (6 + 8) * 2)/TS2022_XTAL_FREQ ;
++
++	ndiv = ndiv + ndiv %2 ;
++	if (ndiv < 4095)
++		value = ndiv - 1024;
++	else if (ndiv < 6143 )
++		value = ndiv + 1024;
++	else
++		value = ndiv + 3072;
++
++	ts2022_writereg(fe, 0x01, (value & 0x3f00) >> 8);
++	ts2022_writereg(fe, 0x02, value & 0x00ff);
++	ts2022_writereg(fe, 0x03, 0x06);
++	ts2022_writereg(fe, 0x51, 0x0f);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x10);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++
++	value =  ts2022_readreg(fe, 0x14);
++	value &=0x7f;
++	if (value < 64 ) {
++		value =  ts2022_readreg(fe, 0x10);
++		value |= 0x80;
++		ts2022_writereg(fe, 0x10, value);
++		ts2022_writereg(fe, 0x11, 0x6f);
++
++		ts2022_writereg(fe, 0x51, 0x0f);
++		ts2022_writereg(fe, 0x51, 0x1f);
++		ts2022_writereg(fe, 0x50, 0x10);
++		ts2022_writereg(fe, 0x50, 0x00);
++	}
++	msleep(5);
++	value =  ts2022_readreg(fe, 0x14);
++	value &=0x1f;
++	if (value > 19) {
++		value =  ts2022_readreg(fe, 0x10);
++		value &= 0x1d;
++		ts2022_writereg(fe, 0x10, value);
++	}
++	/*set the RF gain*/
++	ts2022_writereg(fe, 0x60, 0x79);
++
++	ts2022_writereg(fe, 0x51, 0x17);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x08);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++
++	ts2022_writereg(fe, 0x25, 0x00);
++	ts2022_writereg(fe, 0x27, 0x70);
++	ts2022_writereg(fe, 0x41, 0x09);
++
++	ts2022_writereg(fe, 0x08, 0x0b);
++	ts2022_writereg(fe, 0x04, 0x2e);
++	ts2022_writereg(fe, 0x51, 0x1b);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x04);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++
++	f3db = ((c->symbol_rate / 1000) * 135) / 200 + 2000;
++	if ((c->symbol_rate / 1000) < 5000)
++		f3db += 3000;
++	if (f3db < 7000)
++		f3db = 7000;
++	if (f3db > 40000)
++		f3db = 40000;
++
++	value = ts2022_readreg(fe, 0x26);
++	value &= 0x3f ;
++
++	ts2022_writereg(fe, 0x41, 0x0d);
++
++	ts2022_writereg(fe, 0x51, 0x1b);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x04);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++	value = (value + (ts2022_readreg(fe, 0x26) & 0x3f)) / 2;
++	mlpf = 0x2e * 207 / ((value << 1) + 151);
++	mlpf_max = mlpf * 135 / 100;
++	mlpf_min = mlpf * 78 / 100;
++	if (mlpf_max > 63)
++		mlpf_max = 63;
++
++
++		value = 3200;
++	nlpf = ((mlpf * f3db * 1000) + (value * TS2022_XTAL_FREQ / 2))
++			/ (value * TS2022_XTAL_FREQ);
++
++	if (nlpf > 23)
++		nlpf = 23;
++	if (nlpf < 1)
++		nlpf = 1;
++
++	/* rounded to the closest integer */
++	mlpf_new = ((TS2022_XTAL_FREQ * nlpf * value) +
++			(1000 * f3db / 2)) / (1000 * f3db);
++
++	if (mlpf_new < mlpf_min) {
++		nlpf++;
++		mlpf_new = ((TS2022_XTAL_FREQ * nlpf * value) +
++				(1000 * f3db / 2)) / (1000 * f3db);
++	}
++
++	if (mlpf_new > mlpf_max)
++		mlpf_new = mlpf_max;
++
++	ts2022_writereg(fe, 0x04, mlpf_new);
++	ts2022_writereg(fe, 0x06, nlpf);
++	ts2022_writereg(fe, 0x51, 0x1b);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x04);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++
++	value = ts2022_readreg(fe, 0x26);
++	value &= 0x3f;
++	ts2022_writereg(fe, 0x41, 0x09);
++
++	ts2022_writereg(fe, 0x51, 0x1b);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x04);
++	ts2022_writereg(fe, 0x50, 0x00);
++	msleep(5);
++	value = (value + (ts2022_readreg(fe, 0x26)&0x3f))/2;
++
++	value |= 0x80;
++	ts2022_writereg(fe, 0x25, value);
++	ts2022_writereg(fe, 0x27, 0x30);
++	ts2022_writereg(fe, 0x08, 0x09);
++	ts2022_writereg(fe, 0x51, 0x1e);
++	ts2022_writereg(fe, 0x51, 0x1f);
++	ts2022_writereg(fe, 0x50, 0x01);
++	ts2022_writereg(fe, 0x50, 0x00);
++
++	msleep(60);
++
++	priv->frequency = (u32)(ndiv * TS2022_XTAL_FREQ / (6 + 8) / (div4 + 1) / 2);
++
++	printk("%s: offset %dkhz\n", __func__, priv->frequency - c->frequency);
++	printk("%s:  %dkhz  %dkhz\n", __func__, c->frequency, priv->frequency);
++
++	return 0;
++}
++
++static int ts2022_get_frequency(struct dvb_frontend *fe, u32 *frequency)
++{
++	struct ts2022_priv *priv = fe->tuner_priv;
++	*frequency = priv->frequency;
++	return 0;
++}
++
++static int ts2022_init(struct dvb_frontend *fe)
++{
++	ts2022_writereg(fe, 0x62, 0xec);
++	ts2022_writereg(fe, 0x42, 0x6c);
++	
++	ts2022_writereg(fe, 0x7d, 0x9d);
++	ts2022_writereg(fe, 0x7c, 0x9a);
++	ts2022_writereg(fe, 0x7a, 0x76);
++	
++	ts2022_writereg(fe, 0x3b, 0x01);
++	ts2022_writereg(fe, 0x63, 0x88);
++	
++	ts2022_writereg(fe, 0x61, 0x85);
++	ts2022_writereg(fe, 0x22, 0x30);
++	ts2022_writereg(fe, 0x30, 0x40);
++	ts2022_writereg(fe, 0x20, 0x23);
++	ts2022_writereg(fe, 0x24, 0x02);
++	ts2022_writereg(fe, 0x12, 0xa0);
++
++	return 0;
++}
++
++static int ts2022_read_signal_strength(struct dvb_frontend *fe,
++				       u16 *signal_strength)
++{
++	int sig_reading = 0; 
++	u8 rfgain, bbgain, nngain;
++	u8 rfagc;
++	u32 gain = 0;
++	dprintk("%s()\n", __func__);
++	
++	rfgain = ts2022_readreg(fe, 0x3d) & 0x1f;
++	bbgain = ts2022_readreg(fe, 0x21) & 0x1f;
++	rfagc = ts2022_readreg(fe, 0x3f);
++	sig_reading = rfagc * 16 -670;
++	if (sig_reading<0)
++		sig_reading =0;
++	nngain =ts2022_readreg(fe, 0x66);
++	nngain = (nngain >> 3) & 0x07;
++	
++	if (rfgain < 0)
++		rfgain = 0;
++	if (rfgain > 15)
++		rfgain = 15;
++	if (bbgain < 2)
++		bbgain = 2;
++	if (bbgain > 16)
++		bbgain = 16;
++	if (nngain < 0)
++		nngain = 0;
++	if (nngain > 6)
++		nngain = 6;
++	
++	if (sig_reading < 600)
++		sig_reading = 600;
++	if (sig_reading > 1600)
++		sig_reading = 1600;
++	
++	gain = (u16) rfgain * 265 + (u16) bbgain * 338 + (u16) nngain * 285 + sig_reading * 176 / 100 - 3000;
++	
++	
++	*signal_strength = gain*100;
++	
++	dprintk("%s: raw / cooked = 0x%04x / 0x%04x\n", __func__,
++		sig_reading, *signal_strength);
++	
++	return 0;
++}
++
++static struct dvb_tuner_ops ts2022_tuner_ops = {
++	.info = {
++		.name = "TS2022",
++		.frequency_min = 950000,
++		.frequency_max = 2150000
++	},
++	.init = ts2022_init,
++	.release = ts2022_release,
++	.sleep = ts2022_sleep,
++	.set_params = ts2022_set_params,
++	.get_frequency = ts2022_get_frequency,
++	.get_rf_strength = ts2022_read_signal_strength,
++};
++
++struct dvb_frontend *ts2022_attach(struct dvb_frontend *fe, int addr,
++						struct i2c_adapter *i2c)
++{
++	struct ts2022_priv *priv = NULL;
++	u8 buf;
++
++	dprintk("%s:\n", __func__);
++
++	priv = kzalloc(sizeof(struct ts2022_priv), GFP_KERNEL);
++	if (priv == NULL)
++		return NULL;
++
++	priv->i2c_address = addr;
++	priv->i2c = i2c;
++	fe->tuner_priv = priv;
++
++	/* Wake Up the tuner */
++	buf = ts2022_readreg(fe, 0x00);
++	buf &= 0x03;
++	
++	if (buf == 0x00) {
++		ts2022_writereg(fe, 0x00, 0x01);
++		msleep(2);
++	}
++
++	ts2022_writereg(fe, 0x00, 0x03);
++	msleep(2);
++	
++	/* Check the tuner version */
++	buf = ts2022_readreg(fe, 0x00);
++	if ((buf == 0xc3)|| (buf == 0x83))
++		dprintk(KERN_INFO "%s: Find tuner TS2022!\n", __func__);
++	else {
++		dprintk(KERN_ERR "%s: Read tuner reg[0] = %d\n", __func__, buf);
++		kfree(priv);
++		return NULL;
++	}
++
++	memcpy(&fe->ops.tuner_ops, &ts2022_tuner_ops,
++				sizeof(struct dvb_tuner_ops));
++	fe->ops.read_signal_strength = fe->ops.tuner_ops.get_rf_strength;
++
++	return fe;
++}
++EXPORT_SYMBOL(ts2022_attach);
++
++module_param(debug, int, 0644);
++MODULE_PARM_DESC(debug, "Turn on/off frontend debugging (default:off).");
++
++MODULE_DESCRIPTION("DVB ts2022 driver");
++MODULE_AUTHOR("Tomazzo Muzumici");
++MODULE_LICENSE("GPL");
+diff -Naur a/drivers/media/dvb-frontends/ts2022.h b/drivers/media/dvb-frontends/ts2022.h
+--- a/drivers/media/dvb-frontends/ts2022.h	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/media/dvb-frontends/ts2022.h	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,50 @@
++  /*
++     Driver for Montage TS2022 DVBS/S2 Silicon tuner
++
++     Copyright (C) 2012 Tomazzo Muzumici
++
++     This program is free software; you can redistribute it and/or modify
++     it under the terms of the GNU General Public License as published by
++     the Free Software Foundation; either version 2 of the License, or
++     (at your option) any later version.
++
++     This program is distributed in the hope that it will be useful,
++     but WITHOUT ANY WARRANTY; without even the implied warranty of
++     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++
++     GNU General Public License for more details.
++
++     You should have received a copy of the GNU General Public License
++     along with this program; if not, write to the Free Software
++     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++
++  */
++
++#ifndef TS2022_H
++#define TS2022_H
++
++#include <linux/kconfig.h>
++#include <linux/dvb/frontend.h>
++
++/**
++ * Attach a ts2022 tuner to the supplied frontend structure.
++ *
++ * @param fe Frontend to attach to.
++ * @param addr i2c address of the tuner.
++ * @param i2c i2c adapter to use.
++ * @return FE pointer on success, NULL on failure.
++ */
++#if IS_ENABLED(CONFIG_DVB_TS2022)
++extern struct dvb_frontend *ts2022_attach(struct dvb_frontend *fe, int addr,
++					   struct i2c_adapter *i2c);
++#else
++static inline struct dvb_frontend *ts2022_attach(struct dvb_frontend *fe,
++						  int addr,
++						  struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif /* CONFIG_DVB_TS2022 */
++
++#endif /* TS2022_H */
+diff -Naur a/drivers/media/rc/keymaps/Makefile b/drivers/media/rc/keymaps/Makefile
+--- a/drivers/media/rc/keymaps/Makefile	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/media/rc/keymaps/Makefile	2015-02-05 14:04:01.000000000 -0800
+@@ -94,6 +94,7 @@
+ 			rc-total-media-in-hand-02.o \
+ 			rc-trekstor.o \
+ 			rc-tt-1500.o \
++			rc-tt-4600.o \
+ 			rc-twinhan1027.o \
+ 			rc-videomate-m1f.o \
+ 			rc-videomate-s350.o \
+diff -Naur a/drivers/media/rc/keymaps/rc-tt-4600.c b/drivers/media/rc/keymaps/rc-tt-4600.c
+--- a/drivers/media/rc/keymaps/rc-tt-4600.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/media/rc/keymaps/rc-tt-4600.c	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,79 @@
++/* rc-tt_4600.h - Keytable for Geniatech based TT4600 Remote Controller
++ * derived from drivers/media/rc/keymaps/rc-su3000.c
++ * Copyright (c) 2013 by Evgeny Plehov <Evgeny Plehov@ukr.net>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <media/rc-map.h>
++#include <linux/module.h>
++
++static struct rc_map_table tt_4600[] = {
++       { 0x41, KEY_POWER },
++       { 0x42, KEY_SHUFFLE },
++       { 0x43, KEY_1 },
++       { 0x44, KEY_2 },
++       { 0x45, KEY_3 },
++       { 0x46, KEY_4 },
++       { 0x47, KEY_5 },
++       { 0x48, KEY_6 },
++       { 0x49, KEY_7 },
++       { 0x4a, KEY_8 },
++       { 0x4b, KEY_9 },
++       { 0x4c, KEY_0 },
++       { 0x4d, KEY_UP },
++       { 0x4e, KEY_LEFT },
++       { 0x4f, KEY_OK },
++       { 0x50, KEY_RIGHT },
++       { 0x51, KEY_DOWN },
++       { 0x52, KEY_INFO },
++       { 0x53, KEY_EXIT },
++       { 0x54, KEY_RED },
++       { 0x55, KEY_GREEN },
++       { 0x56, KEY_YELLOW },
++       { 0x57, KEY_BLUE },
++       { 0x58, KEY_MUTE },
++       { 0x59, KEY_TEXT },
++       { 0x5a, KEY_MODE },
++       { 0x61, KEY_OPTION },
++       { 0x62, KEY_EPG },
++       { 0x63, KEY_CHANNELUP },
++       { 0x64, KEY_CHANNELDOWN },
++       { 0x65, KEY_VOLUMEUP },
++       { 0x66, KEY_VOLUMEDOWN },
++       { 0x67, KEY_SETUP },
++       { 0x7a, KEY_RECORD },
++       { 0x7b, KEY_PLAY },
++       { 0x7c, KEY_STOP },
++       { 0x7d, KEY_REWIND },
++       { 0x7e, KEY_PAUSE },
++       { 0x7f, KEY_FORWARD },
++};
++
++static struct rc_map_list tt_4600_map = {
++	.map = {
++		.scan    = tt_4600,
++		.size    = ARRAY_SIZE(tt_4600),
++		.rc_type = RC_TYPE_UNKNOWN,     /* Legacy IR type */
++		.name    = RC_MAP_TT_4600,
++	}
++};
++
++static int __init init_rc_map_tt_4600(void)
++{
++	return rc_map_register(&tt_4600_map);
++}
++
++static void __exit exit_rc_map_tt_4600(void)
++{
++	rc_map_unregister(&tt_4600_map);
++}
++
++module_init(init_rc_map_tt_4600)
++module_exit(exit_rc_map_tt_4600)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Evgeny Plehov <Evgeny Plehov@ukr.net>");
+diff -Naur a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw2102.c
+--- a/drivers/media/usb/dvb-usb/dw2102.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/media/usb/dvb-usb/dw2102.c	2015-02-05 14:04:01.000000000 -0800
+@@ -23,7 +23,9 @@
+ #include "mt312.h"
+ #include "zl10039.h"
+ #include "ts2020.h"
++#include "ts2022.h"
+ #include "ds3000.h"
++#include "ds3103.h"
+ #include "stv0900.h"
+ #include "stv6110.h"
+ #include "stb6100.h"
+@@ -87,6 +89,18 @@
+ #define USB_PID_GOTVIEW_SAT_HD 0x5456
+ #endif
+ 
++#ifndef USB_PID_TEVII_S662
++#define USB_PID_TEVII_S662 0xd662
++#endif
++
++#ifndef USB_PID_TEVII_S482_1
++#define USB_PID_TEVII_S482_1 0xd483
++#endif
++
++#ifndef USB_PID_TEVII_S482_2
++#define USB_PID_TEVII_S482_2 0xd484
++#endif
++
+ #define DW210X_READ_MSG 0
+ #define DW210X_WRITE_MSG 1
+ 
+@@ -1117,6 +1131,12 @@
+ 	.gate = TDA18271_GATE_DIGITAL,
+ };
+ 
++static struct ds3103_config su3000_ds3103_config = {
++	.demod_address = 0x68,
++	.ci_mode = 0,
++	.set_lock_led = dw210x_led_ctrl,
++};
++
+ static u8 m88rs2000_inittab[] = {
+ 	DEMOD_WRITE, 0x9a, 0x30,
+ 	DEMOD_WRITE, 0x00, 0x01,
+@@ -1343,6 +1363,7 @@
+ 	if (dvb_usb_generic_rw(d->dev, obuf, 3, ibuf, 1, 0) < 0)
+ 		err("command 0x0e transfer failed.");
+ 
++	/* power on su3000 */
+ 	obuf[0] = 0xe;
+ 	obuf[1] = 0x02;
+ 	obuf[2] = 1;
+@@ -1358,6 +1379,7 @@
+ 	if (dvb_usb_generic_rw(d->dev, obuf, 3, ibuf, 1, 0) < 0)
+ 		err("command 0x0e transfer failed.");
+ 
++	msleep(20);
+ 	obuf[0] = 0xe;
+ 	obuf[1] = 0x83;
+ 	obuf[2] = 1;
+@@ -1371,18 +1393,27 @@
+ 		err("command 0x51 transfer failed.");
+ 
+ 	d->fe_adap[0].fe = dvb_attach(ds3000_attach, &su3000_ds3000_config,
+-					&d->dev->i2c_adap);
+-	if (d->fe_adap[0].fe == NULL)
+-		return -EIO;
+-
+-	if (dvb_attach(ts2020_attach, d->fe_adap[0].fe,
+-				&dw2104_ts2020_config,
+-				&d->dev->i2c_adap)) {
++				&d->dev->i2c_adap);
++	if (d->fe_adap[0].fe != NULL) {
++		if (dvb_attach(ts2020_attach, d->fe_adap[0].fe,
++			&dw2104_ts2020_config,
++			&d->dev->i2c_adap)) {
+ 		info("Attached DS3000/TS2020!\n");
+ 		return 0;
++		}
++	}
++
++	d->fe_adap[0].fe = dvb_attach(ds3103_attach, &su3000_ds3103_config,
++				&d->dev->i2c_adap);
++	if (d->fe_adap[0].fe != NULL) {
++		if (dvb_attach(ts2022_attach, d->fe_adap[0].fe, 0x60,
++			&d->dev->i2c_adap)) {
++		info("Attached at addr. 0x60 DS3103/TS2022!\n");
++		return 0;
++		}
+ 	}
+ 
+-	info("Failed to attach DS3000/TS2020!\n");
++	info("Failed to attach DS3X0X/TS202X!\n");
+ 	return -EIO;
+ }
+ 
+@@ -1559,8 +1590,17 @@
+ 	TEVII_S421,
+ 	TEVII_S632,
+ 	TERRATEC_CINERGY_S2_R2,
++	TT_S2_4600,
+ 	GOTVIEW_SAT_HD,
+ 	GENIATECH_T220,
++	VP2000,
++	TEVII_S662,
++	TEVII_S482_1,
++	TEVII_S482_2,
++	TERRATEC_S2_BOX,
++	TERRATEC_DUAL_1,
++	TERRATEC_DUAL_2,
++
+ };
+ 
+ static struct usb_device_id dw2102_table[] = {
+@@ -1582,8 +1622,16 @@
+ 	[TEVII_S421] = {USB_DEVICE(0x9022, USB_PID_TEVII_S421)},
+ 	[TEVII_S632] = {USB_DEVICE(0x9022, USB_PID_TEVII_S632)},
+ 	[TERRATEC_CINERGY_S2_R2] = {USB_DEVICE(USB_VID_TERRATEC, 0x00b0)},
++	[TT_S2_4600] = {USB_DEVICE(0x0b48, 0x3011)},
+ 	[GOTVIEW_SAT_HD] = {USB_DEVICE(0x1FE1, USB_PID_GOTVIEW_SAT_HD)},
++	[VP2000] = {USB_DEVICE(0x9022, 0x2000)},
++	[TEVII_S662] = {USB_DEVICE(0x9022, USB_PID_TEVII_S662)},
++	[TEVII_S482_1] = {USB_DEVICE(0x9022, USB_PID_TEVII_S482_1)},
++	[TEVII_S482_2] = {USB_DEVICE(0x9022, USB_PID_TEVII_S482_2)},
+ 	[GENIATECH_T220] = {USB_DEVICE(0x1f4d, 0xD220)},
++	[TERRATEC_S2_BOX] = {USB_DEVICE(USB_VID_TERRATEC, 0x0105)},
++	[TERRATEC_DUAL_1] = {USB_DEVICE(0x153B,0x1181)},
++	[TERRATEC_DUAL_2] = {USB_DEVICE(0x153B,0x1182)},
+ 	{ }
+ };
+ 
+@@ -2061,6 +2109,57 @@
+ 	}
+ };
+ 
++
++static struct dvb_usb_device_description d2000 = {
++        "VisionPlus VP2000 USB",
++        {&dw2102_table[VP2000], NULL},
++        {NULL},
++};
++
++struct dvb_usb_device_properties *s662;
++static struct dvb_usb_device_description d662 = {
++	"TeVii S662",
++	{&dw2102_table[TEVII_S662], NULL},
++	{NULL},
++};
++
++static struct dvb_usb_device_description d482_1 = {
++        "TeVii S482.1 USB",
++        {&dw2102_table[TEVII_S482_1], NULL},
++        {NULL},
++};
++
++static struct dvb_usb_device_description d482_2 = {
++        "TeVii S482.2 USB",
++        {&dw2102_table[TEVII_S482_2], NULL},
++        {NULL},
++};
++
++static struct dvb_usb_device_description d662t = {
++        "Terratec Cinergy S2 USB BOX",
++        {&dw2102_table[TERRATEC_S2_BOX], NULL},
++        {NULL},
++};
++
++static struct dvb_usb_device_description d482t_1 = {
++        "Terratec Cinergy S2 Dual 1 USB",
++        {&dw2102_table[TERRATEC_DUAL_1], NULL},
++        {NULL},
++};
++
++static struct dvb_usb_device_description d482t_2 = {
++        "Terratec Cinergy S2 Dual 2 USB",
++        {&dw2102_table[TERRATEC_DUAL_2], NULL},
++        {NULL},
++};
++
++struct dvb_usb_device_properties *tt4600;
++static struct dvb_usb_device_description d4600 = {
++        "TT Connect S2 4600",
++        {&dw2102_table[TT_S2_4600], NULL},
++        {NULL},
++};
++
+ static int dw2102_probe(struct usb_interface *intf,
+ 		const struct usb_device_id *id)
+ {
+@@ -2111,11 +2210,50 @@
+ 		kfree(p7500);
+ 		return -ENOMEM;
+ 	}
+-	s421->num_device_descs = 2;
++	s421->num_device_descs = 3;
+ 	s421->devices[0] = d421;
+ 	s421->devices[1] = d632;
++	s421->devices[2] = d2000;
+ 	s421->adapter->fe[0].frontend_attach = m88rs2000_frontend_attach;
+ 
++        s662 = kmemdup(&su3000_properties,
++                       sizeof(struct dvb_usb_device_properties), GFP_KERNEL);
++        if (!s662) {
++                kfree(s421);
++                kfree(p1100);
++                kfree(s660);
++                kfree(p7500);
++                return -ENOMEM;
++        }
++        s662->num_device_descs = 6;
++        s662->devices[0] = d662;
++        s662->devices[1] = d482_1;
++        s662->devices[2] = d482_2;
++        s662->devices[3] = d662t;
++        s662->devices[4] = d482t_1;
++        s662->devices[5] = d482t_2;
++        s662->rc.core.rc_codes = RC_MAP_TEVII_NEC;
++        s662->rc.core.rc_query = dw2102_rc_query;
++        s662->rc.core.rc_interval = 250;
++
++        tt4600 = kmemdup(&su3000_properties,
++                       sizeof(struct dvb_usb_device_properties), GFP_KERNEL);
++        if (!tt4600) {
++                kfree(s421);
++                kfree(p1100);
++                kfree(s660);
++                kfree(p7500);
++                kfree(s662);
++                return -ENOMEM;
++        }
++
++        tt4600->num_device_descs = 1;
++        tt4600->devices[0] = d4600;
++        tt4600->rc.core.rc_codes = RC_MAP_TT_4600;
++        tt4600->rc.core.rc_query = dw2102_rc_query;
++        tt4600->rc.core.rc_interval = 250;
++	tt4600->adapter->fe[0].frontend_attach = su3000_frontend_attach;
++
+ 	if (0 == dvb_usb_device_init(intf, &dw2102_properties,
+ 			THIS_MODULE, NULL, adapter_nr) ||
+ 	    0 == dvb_usb_device_init(intf, &dw2104_properties,
+@@ -2132,6 +2270,10 @@
+ 			THIS_MODULE, NULL, adapter_nr) ||
+ 	    0 == dvb_usb_device_init(intf, s421,
+ 			THIS_MODULE, NULL, adapter_nr) ||
++            0 == dvb_usb_device_init(intf, s662,
++                        THIS_MODULE, NULL, adapter_nr) ||
++            0 == dvb_usb_device_init(intf, tt4600,
++                        THIS_MODULE, NULL, adapter_nr) ||
+ 	    0 == dvb_usb_device_init(intf, &su3000_properties,
+ 			 THIS_MODULE, NULL, adapter_nr) ||
+ 	    0 == dvb_usb_device_init(intf, &t220_properties,
+@@ -2153,7 +2295,10 @@
+ MODULE_AUTHOR("Igor M. Liplianin (c) liplianin@me.by");
+ MODULE_DESCRIPTION("Driver for DVBWorld DVB-S 2101, 2102, DVB-S2 2104,"
+ 			" DVB-C 3101 USB2.0,"
+-			" TeVii S600, S630, S650, S660, S480, S421, S632"
++			" TeVii S600, S630, S650, S660, S480, S421, S632, S662, S482"
++			" Technotrend S2-4600,"
++			" Terratec Cinergy S2 USB BOX,"
++			" Terratec Cinergy S2 PCIe Dual,"
+ 			" Prof 1100, 7500 USB2.0,"
+ 			" Geniatech SU3000, T220 devices");
+ MODULE_VERSION("0.1");
+diff -Naur a/drivers/media/usb/dvb-usb/Kconfig b/drivers/media/usb/dvb-usb/Kconfig
+--- a/drivers/media/usb/dvb-usb/Kconfig	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/media/usb/dvb-usb/Kconfig	2015-02-05 14:04:01.000000000 -0800
+@@ -275,6 +275,8 @@
+ 	select DVB_ZL10039 if MEDIA_SUBDRV_AUTOSELECT
+ 	select DVB_DS3000 if MEDIA_SUBDRV_AUTOSELECT
+ 	select DVB_TS2020 if MEDIA_SUBDRV_AUTOSELECT
++	select DVB_DS3103 if MEDIA_SUBDRV_AUTOSELECT
++	select DVB_TS2022 if MEDIA_SUBDRV_AUTOSELECT
+ 	select DVB_STB6100 if MEDIA_SUBDRV_AUTOSELECT
+ 	select DVB_STV6110 if MEDIA_SUBDRV_AUTOSELECT
+ 	select DVB_STV0900 if MEDIA_SUBDRV_AUTOSELECT
+diff -Naur a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+--- a/drivers/mmc/core/sd.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/mmc/core/sd.c	2015-02-05 14:04:01.000000000 -0800
+@@ -366,6 +366,15 @@
+ 		return -ENOMEM;
+ 	}
+ 
++	/*
++	 * Some SDHC cards, notably those with a Sandisk SD controller
++	 * (also found in Kingston products) need a bit of slack
++	 * before successfully handling the SWITCH command.  So far,
++	 * cards identifying themselves as "SD04G" and "SD08G" are
++	 * affected
++	 */
++	udelay(100);
++
+ 	err = mmc_sd_switch(card, 1, 0, 1, status);
+ 	if (err)
+ 		goto out;
+diff -Naur a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
+--- a/drivers/net/ethernet/marvell/mv643xx_eth.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c	2015-02-05 14:04:01.000000000 -0800
+@@ -3112,7 +3112,7 @@
+ 	dev->watchdog_timeo = 2 * HZ;
+ 	dev->base_addr = 0;
+ 
+-	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_TSO;
++	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM;
+ 	dev->vlan_features = dev->features;
+ 
+ 	dev->features |= NETIF_F_RXCSUM;
+diff -Naur a/drivers/net/Kconfig b/drivers/net/Kconfig
+--- a/drivers/net/Kconfig	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/net/Kconfig	2015-02-05 14:04:01.000000000 -0800
+@@ -26,6 +26,7 @@
+ if NETDEVICES
+ 
+ config MII
++	default y
+ 	tristate
+ 
+ config NET_CORE
+diff -Naur a/drivers/pinctrl/mvebu/pinctrl-kirkwood.c b/drivers/pinctrl/mvebu/pinctrl-kirkwood.c
+--- a/drivers/pinctrl/mvebu/pinctrl-kirkwood.c	2015-01-29 17:41:03.000000000 -0800
++++ b/drivers/pinctrl/mvebu/pinctrl-kirkwood.c	2015-02-05 14:04:01.000000000 -0800
+@@ -120,7 +120,7 @@
+ 		MPP_VAR_FUNCTION(0x5, "sata0", "act",    V(0, 1, 1, 1, 1, 0))),
+ 	MPP_MODE(12,
+ 		MPP_VAR_FUNCTION(0x0, "gpo", NULL,       V(1, 1, 1, 0, 1, 0)),
+-		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(0, 0, 0, 1, 0, 0)),
++		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(1, 1, 1, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0x1, "sdio", "clk",     V(1, 1, 1, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0xa, "audio", "spdifo", V(0, 0, 0, 0, 1, 0)),
+ 		MPP_VAR_FUNCTION(0xb, "spi", "mosi",     V(0, 0, 0, 0, 1, 0)),
+diff -Naur a/include/linux/ide.h b/include/linux/ide.h
+--- a/include/linux/ide.h	2015-01-29 17:41:03.000000000 -0800
++++ b/include/linux/ide.h	2015-02-05 14:04:01.000000000 -0800
+@@ -1516,7 +1516,10 @@
+ 
+ static inline void ide_dump_identify(u8 *id)
+ {
+-	print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 2, id, 512, 0);
++
++	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_NONE, 16, 2, id, 512, 0);
++
++
+ }
+ 
+ static inline int hwif_to_node(ide_hwif_t *hwif)
+diff -Naur a/include/linux/leds.h b/include/linux/leds.h
+--- a/include/linux/leds.h	2015-01-29 17:41:03.000000000 -0800
++++ b/include/linux/leds.h	2015-02-05 14:04:01.000000000 -0800
+@@ -1,6 +1,7 @@
+ /*
+  * Driver model for leds and led triggers
+  *
++ * Copyright 2013 bodhi <mibodhi@gmail.com>
+  * Copyright (C) 2005 John Lenz <lenz@cs.wisc.edu>
+  * Copyright (C) 2005 Richard Purdie <rpurdie@openedhand.com>
+  *
+@@ -225,9 +226,9 @@
+ 
+ /* Trigger specific functions */
+ #ifdef CONFIG_LEDS_TRIGGER_IDE_DISK
+-extern void ledtrig_ide_activity(void);
++extern void ledtrig_ide_activity(int portno);
+ #else
+-static inline void ledtrig_ide_activity(void) {}
++static inline void ledtrig_ide_activity(int portno) {}
+ #endif
+ 
+ #if defined(CONFIG_LEDS_TRIGGER_CAMERA) || defined(CONFIG_LEDS_TRIGGER_CAMERA_MODULE)
+diff -Naur a/include/linux/nsa3xx-hwmon.h b/include/linux/nsa3xx-hwmon.h
+--- a/include/linux/nsa3xx-hwmon.h	1969-12-31 16:00:00.000000000 -0800
++++ b/include/linux/nsa3xx-hwmon.h	2015-02-05 14:04:01.000000000 -0800
+@@ -0,0 +1,21 @@
++/*
++ * include/linux/nsa3xx.hwmon.h
++ *
++ * Platform data structure for ZyXEL NSA3xx hwmon driver
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++#ifndef __LINUX_NSA3XX_HWMON_H
++#define __LINUX_NSA3XX_HWMON_H
++
++struct nsa3xx_hwmon_platform_data {
++	/* GPIO pins */
++	unsigned act_pin;
++	unsigned clk_pin;
++	unsigned data_pin;
++};
++
++#endif /* __LINUX_NSA3XX_HWMON_H */
+diff -Naur a/include/media/rc-map.h b/include/media/rc-map.h
+--- a/include/media/rc-map.h	2015-01-29 17:41:03.000000000 -0800
++++ b/include/media/rc-map.h	2015-02-05 14:04:01.000000000 -0800
+@@ -204,6 +204,7 @@
+ #define RC_MAP_TOTAL_MEDIA_IN_HAND_02    "rc-total-media-in-hand-02"
+ #define RC_MAP_TREKSTOR                  "rc-trekstor"
+ #define RC_MAP_TT_1500                   "rc-tt-1500"
++#define RC_MAP_TT_4600                   "rc-tt-4600"
+ #define RC_MAP_TWINHAN_VP1027_DVBS       "rc-twinhan1027"
+ #define RC_MAP_VIDEOMATE_K100            "rc-videomate-k100"
+ #define RC_MAP_VIDEOMATE_S350            "rc-videomate-s350"

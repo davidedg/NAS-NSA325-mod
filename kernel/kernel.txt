@@ -25,7 +25,7 @@ Since Kernel 3.17 a DTS file is available to compile a working DTB (see credits)
 
 # You can download vanilla 3.17+ kernel and patch:
 cd $KERNELWORKDIR/$KERNELCURRENT
-patch -p1 < ../linux-3.17.0-kirkwood-tld-1.patch
+patch -p1 < ../linux-3.18.5-kirkwood-tld-1.patch
 
 
 ## Prep tree
