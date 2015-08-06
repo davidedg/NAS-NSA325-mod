@@ -1,0 +1,253 @@
+##################################################
+# USE A PRECOMPILED VERSION
+##################################################
+
+You can download a pre-compiled version of U-Boot from:
+http://forum.doozan.com/read.php?3,12381 - special kudos to Bodhi!!
+
+If you use a precompiled version, you can skip to "Configure new U-BOOT" section.
+
+
+Or, just for academic purposes... 
+
+##################################################
+# DOWNLOAD U-BOOT from bodhi's GIT:
+##################################################
+
+cd $UBOOTWORKDIR
+git clone https://github.com/mibodhi/u-boot-kirkwood.git
+cd u-boot-kirkwood
+
+
+##################################################
+# BUILD U-BOOT
+##################################################
+
+make distclean
+make nsa325_config
+cross-make -j8 u-boot.kwb
+
+#final output:
+
+  LD      u-boot
+  OBJCOPY u-boot.bin
+  MKIMAGE u-boot.kwb
+
+# PREPARE image for NAND write
+dd if=u-boot.kwb of=uboot.nsa325.mtd0.kwb bs=512k conv=sync
+
+  
+ls -al *.kwb
+-rw-r--r-- 1 davidedg davidedg 444220 Aug  4 18:22 u-boot.kwb
+-rw-r--r-- 1 davidedg davidedg 524288 Aug  4 18:23 uboot.nsa325.mtd0.kwb
+
+
+
+
+##################################################
+# INSTALLING NEW U-BOOT on FLASH
+##################################################
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    THIS IS THE MOST DANGEROUS PART
+	CAREFULLY READ ALL WARNINGS ABOUT BAD BLOCKS:
+	http://forum.doozan.com/read.php?3,12381
+	
+	IF BAD THINGS HAPPEN HERE, NAS BECOMES USELESS (kwboot to try rescue!)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+## From within a Debian System in NAS:
+
+flash_erase /dev/mtd0 0 4
+nandwrite /dev/mtd0 uboot.nsa325.mtd0.kwb
+
+# OUTPUT:
+	# flash_erase /dev/mtd0 0 4
+	Erasing 128 Kibyte @ 60000 -- 100 % complete
+	# nandwrite /dev/mtd0 uboot.nsa325.mtd0.kwb
+	Writing data to block 0 at offset 0x0
+	Writing data to block 1 at offset 0x20000
+	Writing data to block 2 at offset 0x40000
+	Writing data to block 3 at offset 0x60000
+
+
+
+NEW U-BOOT SERIAL LOG:
+###############################################################
+U-Boot 2014.07-gfb74106-dirty (Aug 04 2015 - 18:22:40)
+ZyXEL NSA325 2-Bay Power Media Server
+
+SoC:   Kirkwood 88F6282_??
+DRAM:  512 MiB
+WARNING: Caches not enabled
+NAND:  128 MiB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   egiga0 [PRIME]
+MV88E1318 PHY initialized on egiga0
+Hit any key to stop autoboot:  0
+
+NSA325> version
+
+U-Boot 2014.07-gfb74106-dirty (Aug 04 2015 - 18:22:40)
+ZyXEL NSA325 2-Bay Power Media Server
+arm-unknown-linux-gnueabi-gcc (crosstool-NG 1.20.0) 4.9.1
+GNU ld (crosstool-NG 1.20.0) 2.22
+
+
+
+##################################################
+# Configure new U-BOOT
+##################################################
+
+The U-Boot environment (configuration) resides on FLASH.
+To change it, we do it from within U-Boot itself, via the "setenv" command.
+
+
+So, once you have flashed new u-boot, on serial access:
+
+# reset Environment to default
+env default -a
+
+##
+## Sets new BASIC ENVIRONMENT - !! REMEMBER TO ADJUST PARAMETERS TO YOUR NETWORK
+##
+
+setenv arcNumber '4495'
+setenv machid '118f'
+
+setenv baudrate '115200'
+setenv console 'ttyS0,115200'
+
+setenv led_error 'orange blinking'
+setenv led_exit 'green off'
+setenv led_init 'green blinking'
+setenv stderr 'serial'
+setenv stdin 'serial'
+setenv stdout 'serial'
+setenv mainlineLinux 'yes'
+setenv ethact 'egiga0'
+setenv ethaddr '5C:F4:AB:40:5B:23'
+setenv ethmtu '1500'
+setenv ethprime 'egiga0'
+setenv mtdids 'nand0=orion_nand'
+setenv mtdparts 'mtdparts=nand_mtd:0x100000(uboot),0x80000(stock_uboot_env),0x80000(key_store),0x80000(info),0xA00000(etc),0xA00000(kernel_1),0x2FC0000(rootfs1),0xA00000(kernel_2),0x2FC0000(rootfs2)'
+
+
+
+##
+## Now set boot params and sequence - !! REMEMBER TO ADJUST TO YOUR PARTITION LAYOUT !!
+##
+
+Boot Sequence:
+
+- if button COPY is pressed, load uEnv.txt:
+		if a file "/boot/uEnv.txt" is found on partition 1 of hdd|usb (usb is loaded last so it overrides), then the content (with valid env commands) is loaded.
+		this serves the purpose of quickly testing/overriding env
+		Here uEnv.txt is loaded at preboot level, so for example it may contain new network params to use or to replace bootcmd
+
+
+- if button POWER is pressed, start NETCONSOLE ( see http://forum.doozan.com/read.php?3,14,14 )
+		this will require $ipaddr to be set and $serverip to be pingable (but it's not needed to be the controlling machine)
+
+
+- if buttons POWER+COPY are pressed, load uEnv.txt (see above) and then try NETCONSOLE
+
+
+- if a file "/boot/uEnv.txt" is found on partition 1 of hdd|usb (usb is loaded last so it overrides), then the content (with valid env commands) is loaded.
+		this serves the purpose of quickly testing/overriding env
+
+
+- try to boot from USB stick:
+		load from USB partition 1: uImage,dtb,uInitramfs and boot with root=LABEL=usb-root
+		1st partition can be either VFAT or EXT2
+
+- try to boot from HDD 0
+		load from IDE partition 1: kernel,dtb,uinitramfs and boot with root=LABEL=hdd-root
+		1st partition must be extfs
+
+
+
+
+setenv hdd_load_DTB 'ext2load ide 0:3 ${DTBAddr} /boot/kirkwood-nsa325.dtb || ext2load ide 1:3 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
+setenv hdd_load_uImage 'ext2load ide 0:3 ${loadaddr} /boot/uImage || ext2load ide 1:3 ${loadaddr} /boot/uImage'
+setenv hdd_load_uInitramfs 'ext2load ide 0:3 ${uInitramfsAddr} /boot/uInitramfs || ext2load ide 1:3 ${uInitramfsAddr} /boot/uInitramfs'
+setenv hdd_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=hdd-root rootdelay=10 ${bootargs_end}'
+setenv usb_load_DTB 'fatload usb 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb || ext2load usb 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
+setenv usb_load_uImage 'fatload usb 0:1 ${loadaddr} /boot/uImage || ext2load usb 0:1 ${loadaddr} /boot/uImage'
+setenv usb_load_uInitramfs 'fatload usb 0:1 ${uInitramfsAddr} /boot/uInitramfs || ext2load usb 0:1 ${uInitramfsAddr} /boot/uInitramfs'
+setenv usb_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=usb-root usb-storage.delay_use=0 rootdelay=10 ${bootargs_end}'
+setenv uenv_devices 'ide usb'
+setenv uenv_import 'echo importing envs ...; env import -t 0x810000 $filesize'
+setenv uenv_load 'run uenv_init_devices; setenv uenv_loaded 0; for devtype in $uenv_devices;  do for disknum in 0; do run uenv_read_disk; done; done;'
+setenv uenv_read 'echo loading envs from $devtype $disknum ...; if load $devtype $disknum:1 0x810000 /boot/uEnv.txt; then setenv uenv_loaded 1; fi'
+setenv uenv_read_disk 'if test $devtype -eq mmc; then if $devtype part; then run uenv_read;  fi; else if $devtype part $disknum; then run uenv_read; fi;  fi'
+setenv uenv_init_devices 'setenv init_usb "usb start";  setenv init_ide "ide reset"; for devtype in $uenv_devices; do run init_$devtype; done;'
+
+setenv uenv_override 'run uenv_load; if test $uenv_loaded -eq 1; then run uenv_import; fi'
+setenv boot_from_hdd 'ide reset; if run hdd_load_DTB && run hdd_load_uImage && run hdd_load_uInitramfs; then run hdd_setbootargs; bootm ${loadaddr} ${uInitramfsAddr} ${DTBAddr}; fi'
+setenv boot_from_usb 'usb reset; if run usb_load_DTB && run usb_load_uImage && run usb_load_uInitramfs; then run usb_setbootargs; bootm ${loadaddr} ${uInitramfsAddr} ${DTBAddr}; fi'
+
+setenv bootargs_end ':::orion:eth0:none'
+setenv loadaddr '0x800000'
+setenv uInitramfsAddr '0x1100000'
+setenv DTBAddr '0x1c00000'
+
+setenv bootdelay '3'
+setenv bootcmd 'run uenv_override ; run boot_from_usb ; run boot_from_hdd ; reset'
+
+
+
+# SAVE THE NEW ENV:
+saveenv
+
+##
+## // NETCONSOLE AND BUTTONS:
+##
+
+
+### OPTIONAL AND POTENTIALLY DANGEROUS ###
+setenv ipaddr 192.168.0.100
+setenv netmask '255.255.255.0'
+setenv serverip 192.168.0.254
+
+setenv netconsole_start 'setenv bootdelay 60; setenv stdin nc; setenv stdout nc; setenv stderr nc; version;'
+setenv netconsole 'pingtest=0; for pingstat in 1 2 3 4 5; do; sleep 1; if ping $serverip; then pingtest=1; fi; done; if test $pingtest -eq 1; then run netconsole_start; fi'
+
+setenv btncmd_all 'echo BUTTONS: ALL'
+setenv btncmd_pwr 'echo BUTTONS: POWER; echo ; echo ------NETCONSOLE INVOKED------ ; echo ipaddr=$ipaddr ; echo pingtest=$serverip ; echo ; run netconsole'
+setenv btncmd_copy 'echo BUTTONS: COPY; echo ; echo ------UENV OVERRIDE INVOKED------ ; run uenv_override'
+setenv btncmd_reset 'echo BUTTONS: RESET'
+setenv btncmd_pc 'echo BUTTONS: POWER+COPY; echo ; echo ------UENV OVERRIDE INVOKED------ ; run uenv_override ; echo ; echo ------NETCONSOLE INVOKED------ ; echo ipaddr=$ipaddr ; echo pingtest=$serverip ; echo ; run netconsole'
+setenv btncmd_pr 'echo BUTTONS: POWER+RESET'
+setenv btncmd_cr 'echo BUTTONS: COPY+RESET'
+
+setenv btnswitch_pwr 'if button copy && button reset; then run btncmd_all; else if button copy; then run btncmd_pc; else if button reset; then run btncmd_pr; else run btncmd_pwr; fi; fi; fi'
+setenv btnswitch_copy 'if button power && button reset; then run btncmd_all; else if button power; then run btncmd_pc; else if button reset; then run btncmd_cr; else run btncmd_copy; fi; fi; fi'
+setenv btnswitch_reset 'if button power && button copy; then run btncmd_all; else if button power; then run btncmd_pr; else if button copy; then run btncmd_cr; else run btncmd_reset; fi; fi; fi'
+setenv btnswitch 'if button power; then run btnswitch_pwr; else if button copy; then run btnswitch_copy; else if button reset; then run btnswitch_reset; fi; fi; fi'
+
+setenv preboot 'setenv bootdelay 3; setenv stdin serial; setenv stdout serial; setenv stderr serial; run btnswitch'
+
+
+# SAVE THE NEW ENV:
+saveenv
+
+### OPTIONAL AND POTENTIALLY DANGEROUS ###
+
+
+
+
+# On Controlling PC, with IP ADDRESS = $serverip (not strictly required, but $serverip must be pingable):
+# Use NC (NetCat) - on Windows I use: https://github.com/diegocr/netcat/
+nc.exe -l -u -p 6666
+
+
+##########################################################################################
+##########################################################################################
+
+
