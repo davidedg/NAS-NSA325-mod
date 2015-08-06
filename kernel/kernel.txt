@@ -4,6 +4,8 @@ USE THE "vars.txt" commands to prepare the environment variables we will use.
 SEE "cross-compile" section to prepare the build toolchain
 ***************************************************
 
+##
+sudo aptitude install u-boot-tools
 
 ##################################################
 # CONFIGURE KERNEL
@@ -11,8 +13,9 @@ SEE "cross-compile" section to prepare the build toolchain
 
 This will apply:
 	Kirkwood (Marvell Engineering Bus) default config
-	Reduce Kernel Size not compiling unused stuff, optional.
-	Include some extra features (like sound, wifi, etc.), these are optional.
+	Minimal Config for a functioning device
+	(optional) Reduce Kernel Size not compiling unused stuff.
+	(optional) Include some extra features (like sound, wifi, etc.)
 
 
 The 1st section is mandatory for the very minimal working of the NAS.
@@ -23,9 +26,9 @@ Feel free to explore and add/remove features at your preference.
 Since Kernel 3.17 a DTS file is available to compile a working DTB (see credits)
 
 
-# You can download vanilla 3.17+ kernel and patch:
+# You can download vanilla 4.04+ kernel and patch:
 cd $KERNELWORKDIR/$KERNELCURRENT
-patch -p1 < ../linux-3.18.5-kirkwood-tld-1.patch
+patch -p1 < ../linux-4.0.0-kirkwood-tld-2.patch
 
 
 ## Prep tree
@@ -111,6 +114,22 @@ CONFIG_DEVTMPFS_MOUNT=y
 # NetConsole support
 CONFIG_NETCONSOLE=m
 EOF
+
+
+cat <<EOF >>.config
+# Control Groups for SystemD
+CONFIG_CGROUPS=y
+CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUP_DEVICE=y
+CONFIG_CPUSETS=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_CGROUP_CPUACCT=y
+CONFIG_CGROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_BLK_CGROUP=y
+CONFIG_NAMESPACES=y
+EOF
+
 
 
 cat <<EOF >>.config
@@ -234,7 +253,7 @@ EOF
 cat <<EOF >>.config
 # Disk Managers - MD
 CONFIG_MD=y
-# MD AUTODETECT IS DEPRECATED AND DOES NOT SEEM TO WORK ANYMORE
+# MD AUTODETECT IS DEPRECATED - it works only with metadata=0.90
 CONFIG_MD_AUTODETECT=n
 CONFIG_BLK_DEV_MD=y
 CONFIG_MD_LINEAR=y
@@ -424,9 +443,9 @@ KERNELVERSION=$(grep -m5 "Linux/arm .* Kernel Configuration" .config | sed 's/.*
 cp arch/arm/boot/uImage $RFShdd/boot/uImage-v${KERNELVERSION}${KERNELSUFFIX}
 if [ $USE_STOCK_UBOOT == "n" ]; then cp arch/arm/boot/dts/kirkwood-nsa325.dtb $RFShdd/boot/kirkwood-nsa325.dtb; fi
 ln -sf uImage-v${KERNELVERSION}${KERNELSUFFIX} $RFShdd/boot/uImage${UIMAGE_SYMLINK}
-make INSTALL_MOD_PATH=$RFShdd modules_install
-
-
+make INSTALL_MOD_PATH=$KERNELWORKDIR modules_install
+sudo chown -R root:root $KERNELWORKDIR/lib/modules/*
+sudo cp -a $KERNELWORKDIR/lib/modules/* $RFShdd/lib/modules/
 
 
 #######################################################################################################################

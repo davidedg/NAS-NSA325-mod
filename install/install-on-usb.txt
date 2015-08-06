@@ -12,34 +12,34 @@ PARTITION USB DEVICE IN 2:
 
 Create FS
 #1:	BOOT PARTITION
-mkfs.ext2 -L usb-boot $USBBOOTDEV
+sudo mkfs.ext2 -L usb-boot $USBBOOTDEV
 
 #2: ROOT PARTITION
-mkfs.ext4 -L usb-root -E lazy_itable_init=0,lazy_journal_init=0 $USBROOTDEV
+sudo mkfs.ext4 -L usb-root -E lazy_itable_init=0,lazy_journal_init=0 $USBROOTDEV
 
 
 
 # mount boot and root usb
-mkdir -p $USBBOOTMNT
-mkdir -p $USBROOTMNT
+sudo mkdir -p $USBBOOTMNT
+sudo mkdir -p $USBROOTMNT
 
-mount $USBBOOTDEV $USBBOOTMNT
-mount $USBROOTDEV $USBROOTMNT
+sudo mount $USBBOOTDEV $USBBOOTMNT
+sudo mount $USBROOTDEV $USBROOTMNT
 
 # copy rootfs to usb-root
-cp -a $RFShdd/* $USBROOTMNT/
+sudo cp -a $RFShdd/* $USBROOTMNT/
 # move kernel and initramfs to usb-boot
-mv $USBROOTMNT/boot/*  $USBBOOTMNT/
+sudo mv $USBROOTMNT/boot/*  $USBBOOTMNT/
 
 # fake for u-boot to be able to read both from / and from /boot from usb 0:1
 cd $USBBOOTMNT
-ln -sf . boot
+sudo ln -sf . boot
 cd -
 
 
-sync
-umount $USBBOOTMNT
-umount $USBROOTMNT
+sudo sync
+sudo umount $USBBOOTMNT
+sudo umount $USBROOTMNT
 
 
 Now you can insert the usb stick in the rear port #1 of nas and test with U-Boot

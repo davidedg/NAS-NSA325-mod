@@ -24,19 +24,8 @@ cd $NASINITRAMFS
 mkdir -p $NASINITRAMFS/stage/bin
 mkdir -p $NASINITRAMFS/stage/scripts
 
-
-# UNTESTED/NOT SUPPORTED:
-	# If you need KERNEL MODULES to load your root device, please don't!
-	# Just compile support in kernel, it's easier.
-	# If you still need it, you may try with;
-	mkdir -p $NASINITRAMFS/stage/lib/modules
-	cd ${KERNELWORKDIR}/nsa325v2-3.16.2
-	make INSTALL_MOD_PATH=$NASINITRAMFS/stage modules_install
-	cd -
-
-
 # Get Busybox ARM binary
-
+unset http_proxy
 wget http://busybox.net/downloads/binaries/latest/busybox-armv5l -O $NASINITRAMFS/stage/bin/busybox
 chmod +x $NASINITRAMFS/stage/bin/busybox
 ln -s busybox $NASINITRAMFS/stage/bin/sh
@@ -85,14 +74,16 @@ chmod +x $NASINITRAMFS/stage/scripts/init-bottom/root-ro-overlayfs
 # COMPILE INITRAMS
 ##################################################
 
+Fix Permissions:
+sudo chown -R root:root $NASINITRAMFS/stage/*
 Make Image:
 cd $NASINITRAMFS
-./make-uInitramfs
-	2199 blocks
+sudo ./make-uInitramfs
+	2185 blocks
 	Image Name:   NSA-325-v2-Initramfs
-	Created:      Thu May  8 23:33:06 2014
+	Created:      Sat Jun 20 00:40:58 2015
 	Image Type:   ARM Linux RAMDisk Image (gzip compressed)
-	Data Size:    632222 Bytes = 617.40 kB = 0.60 MB
+	Data Size:    630673 Bytes = 615.89 kB = 0.60 MB
 	Load Address: 00000000
 	Entry Point:  00000000
 
@@ -104,7 +95,7 @@ cd $NASINITRAMFS
 
 - COPY uInitramfs to RootFS for NAND:
 
-cp $NASINITRAMFS/uInitramfs $RFShdd/boot/uInitramfs
+sudo cp $NASINITRAMFS/uInitramfs $RFShdd/boot/uInitramfs
 
 
 

@@ -1,0 +1,68 @@
+http://crosstool-ng.org/#download_and_usage
+
+sudo aptitude install build-essentials
+sudo aptitude install gperf flex bison gawk libtool libtool-bin automake expat libexpat1-dev libncurses5-dev
+sudo aptitude install gcj-jdk
+
+
+?? ln -s /usr/bin/gcj-4.7 /usr/bin/gcj
+
+export CTNGVER=1.20.0
+
+cd /usr/local/src
+sudo wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-$CTNGVER.tar.bz2
+sudo tar xjf crosstool-ng-$CTNGVER.tar.bz2
+cd crosstool-ng-$CTNGVER
+sudo ./configure --prefix=/usr/local/ct-ng
+sudo make
+sudo make install
+
+sudo cp ct-ng.comp /etc/bash_completion.d/
+
+
+###############
+AS NORMAL USER:
+###############
+export PATH="${HOME}/x-tools/arm-unknown-linux-gnueabi/bin:/usr/local/ct-ng/bin:${PATH}"
+
+mkdir ~/src
+mkdir ~/ct
+cd ~/ct
+ct-ng help
+ct-ng list-samples
+
+ct-ng show-arm-unknown-linux-gnueabi
+	[G..]   arm-unknown-linux-gnueabi
+		OS             : linux-3.15.4
+		Companion libs : gmp-5.1.3 mpfr-3.1.2 cloog-ppl-0.18.1 mpc-1.0.2 libelf-0.8.13
+		binutils       : binutils-2.22
+		C compiler     : gcc-4.9.1 (C,C++)
+		C library      : glibc-2.19 (threads: nptl)
+		Tools          : dmalloc-5.5.2 duma-2_5_15 gdb-7.8 ltrace-0.7.3 strace-4.8
+
+
+ct-ng arm-unknown-linux-gnueabi
+ct-ng build
+
+if no sample really fits your needs:
+	- choose the one closest to what you want (see above), and start building it (see above, too)
+        this ensures sure it is working for your machine, before trying to do more advanced tests
+    - fine-tune the configuration, and re-run the build, with:
+		ct-ng menuconfig
+		ct-ng build
+
+
+# TO COMPILE:
+make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi-  ...
+
+# TO STRIP BINARIES:
+arm-unknown-linux-gnueabi-strip ...
+
+
+
+echo "# CROSS COMPILE CONFIGURATION" >> ~/.bashrc
+echo "export PATH=\${HOME}/x-tools/arm-unknown-linux-gnueabi/bin:/usr/local/ct-ng/bin:\${PATH}" >> ~/.bashrc
+echo "export CROSS_COMPILE=arm-unknown-linux-gnueabi-" >> ~/.bashrc
+echo "export ARCH=arm" >> ~/.bashrc
+
+

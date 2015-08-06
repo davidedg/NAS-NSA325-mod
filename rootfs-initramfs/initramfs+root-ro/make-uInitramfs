@@ -2,4 +2,4 @@
 cd stage
 find . | cpio -H newc -o | gzip >../uInitramfs.cpio.gz
 cd ..
-mkimage -A arm -O linux -T ramdisk -C gzip -a 0x00e00000 -e 0x00e00000 -n DNS325-Initramfs -d uInitramfs.cpio.gz uInitramfs
+mkimage -A arm -O linux -T ramdisk -C gzip -a 0x00000000 -e 0x00000000 -n NSA-325-v2-Initramfs -d uInitramfs.cpio.gz uInitramfs
