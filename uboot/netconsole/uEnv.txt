@@ -1,0 +1,1 @@
+bootargs_custom=netconsole=4444@192.168.0.100/eth0,9353@192.168.0.5/54:04:A6:3C:9B:86

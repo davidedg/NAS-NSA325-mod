@@ -167,20 +167,20 @@ Boot Sequence:
 		1st partition can be either VFAT or EXT2
 
 - try to boot from HDD 0
-		load from IDE partition 1: kernel,dtb,uinitramfs and boot with root=LABEL=hdd-root
-		1st partition must be extfs
+		load from DISK0/DISK1, partition 1: kernel,dtb,uinitramfs and boot with root=LABEL=hdd-root
+		root partition must be extfs
 
 
 
 
-setenv hdd_load_DTB 'ext2load ide 0:3 ${DTBAddr} /boot/kirkwood-nsa325.dtb || ext2load ide 1:3 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
-setenv hdd_load_uImage 'ext2load ide 0:3 ${loadaddr} /boot/uImage || ext2load ide 1:3 ${loadaddr} /boot/uImage'
-setenv hdd_load_uInitramfs 'ext2load ide 0:3 ${uInitramfsAddr} /boot/uInitramfs || ext2load ide 1:3 ${uInitramfsAddr} /boot/uInitramfs'
-setenv hdd_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=hdd-root rootdelay=10 ${bootargs_end}'
-setenv usb_load_DTB 'fatload usb 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb || ext2load usb 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
-setenv usb_load_uImage 'fatload usb 0:1 ${loadaddr} /boot/uImage || ext2load usb 0:1 ${loadaddr} /boot/uImage'
-setenv usb_load_uInitramfs 'fatload usb 0:1 ${uInitramfsAddr} /boot/uInitramfs || ext2load usb 0:1 ${uInitramfsAddr} /boot/uInitramfs'
-setenv usb_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=usb-root usb-storage.delay_use=0 rootdelay=10 ${bootargs_end}'
+setenv hdd_load_DTB 'load ide 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb || load ide 1:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
+setenv hdd_load_uImage 'load ide 0:1 ${loadaddr} /boot/uImage || load ide 1:1 ${loadaddr} /boot/uImage'
+setenv hdd_load_uInitramfs 'load ide 0:1 ${uInitramfsAddr} /boot/uInitramfs || load ide 1:1 ${uInitramfsAddr} /boot/uInitramfs'
+setenv hdd_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=hdd-root rootdelay=10 ${bootargs_custom} ${bootargs_end}'
+setenv usb_load_DTB 'load usb 0:1 ${DTBAddr} /boot/kirkwood-nsa325.dtb'
+setenv usb_load_uImage 'load usb 0:1 ${loadaddr} /boot/uImage'
+setenv usb_load_uInitramfs 'load usb 0:1 ${uInitramfsAddr} /boot/uInitramfs'
+setenv usb_setbootargs 'setenv bootargs console=$console rootfstype=ext4 root=LABEL=usb-root usb-storage.delay_use=0 rootdelay=10 ${bootargs_custom} ${bootargs_end}'
 setenv uenv_devices 'ide usb'
 setenv uenv_import 'echo importing envs ...; env import -t 0x810000 $filesize'
 setenv uenv_load 'run uenv_init_devices; setenv uenv_loaded 0; for devtype in $uenv_devices;  do for disknum in 0; do run uenv_read_disk; done; done;'
