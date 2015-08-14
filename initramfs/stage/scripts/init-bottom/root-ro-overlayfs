@@ -3,14 +3,14 @@
 # -lowerdir = real root on NAND, mounted read-only.
 # -upperdir = tmpfs volume.
 #
-# To make NAND writeable:
+# To make rootfs read-only:
 #
-#   * option 1: kernel boot parameter "disable-root-ro=true"
-#   * option 2: create file "disable-root-ro" under real root
+#   * option 1: kernel boot parameter "enable-root-ro=true"
+#   * option 2: create file "enable-root-ro" under real root
 #
 
 MSGTAG="OVERLAYFS"
-DISABLE_MAGIC_FILE="/disable-root-ro"
+ENABLE_MAGIC_FILE="/enable-root-ro"
 
 echo "${MSGTAG}: initializing..."
 
@@ -22,26 +22,35 @@ if [ -z ${ROOT} ]; then
 fi
 
 # parse kernel boot command line 
-DISABLE_ROOT_RO=
+ENABLE_ROOT_RO=
 for CMD_PARAM in $(cat /proc/cmdline); do 
     case ${CMD_PARAM} in 
-        disable-root-ro=*)
-            DISABLE_ROOT_RO=${CMD_PARAM#disable-root-ro=}
+        enable-root-ro=*)
+            ENABLE_ROOT_RO=${CMD_PARAM#enable-root-ro=}
             ;;
     esac
 done
 
 
+ENABLED=0
+# check if read-only root fs is enabled
+if [ -z "${ENABLE_ROOT_RO}" ]; then
+    if [ "${ENABLE_ROOT_RO}" = "true" ]; then
+        echo "${MSGTAG}: enabled, boot parameter enable-root-ro=true"
+		ENABLED=1
+    fi
+fi
 
-# check if read-only root fs is disabled
-if [ ! -z "${DISABLE_ROOT_RO}" ]; then
-    echo "${MSGTAG}: disabled, found boot parameter disable-root-ro=${DISABLE_ROOT_RO}"
-    exit 0
+if [ -e "${rootmnt}${ENABLE_MAGIC_FILE}" ]; then
+    echo "${MSGTAG}: enabled, found file ${rootmnt}${ENABLE_MAGIC_FILE}"
+	ENABLED=1
 fi
-if [ -e "${rootmnt}${DISABLE_MAGIC_FILE}" ]; then
-    echo "${MSGTAG}: disabled, found file ${rootmnt}${DISABLE_MAGIC_FILE}"
-    exit 0
+
+if [ ${ENABLED} -eq 0 ]; then
+    echo "${MSGTAG}: disabled, no magic file or kernel param found"
+	exit 0
 fi
+
 
 # generic settings 
 # ${ROOT} and ${rootmnt} are predefined by caller of this script. Note that

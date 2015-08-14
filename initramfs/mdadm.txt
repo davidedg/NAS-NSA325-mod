@@ -1,0 +1,24 @@
+
+## See cross-compile/ct-ng.txt
+
+
+# Install build dependencies:
+sudo apt-get install gperf flex bison gawk libtool automake expat libexpat1-dev
+sudo apt-get install gcj-jdk
+
+
+# Download and build MDADM static:
+
+mkdir -p $MDADMWORKDIR
+cd $MDADMWORKDIR
+wget https://www.kernel.org/pub/linux/utils/raid/mdadm/mdadm-3.3.4.tar.xz
+tar xf mdadm-3.3.4.tar.xz
+
+cd mdadm-3.3.4
+
+## compile (adjust -j for your host - this is for 8 CPUs)
+cross-make -j8 mdadm.static
+${CROSS_COMPILE}strip mdadm.static
+
+Copy the mdadm.static into initramfs stage/bin/mdadm
+

@@ -7,8 +7,22 @@ to try with different ones.
 
 
 PARTITION USB DEVICE IN 2: 
-#1	bootable	50MB	type Linux
-#2	-			*		type Linux
+#1	bootable	50MB	type Linux ~ VFAT(0xB)
+#2	-			*		type Linux (0x83)
+
+
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+
+echo $USBBOOTDEV
+echo $USBROOTDEV
+cat /proc/partitions
+
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+!!! CHECK YOUR USBBOOTDEV and USBROOTDEV !!!
+
 
 Create FS
 #1:	BOOT PARTITION
@@ -44,6 +58,10 @@ sudo umount $USBROOTMNT
 
 Now you can insert the usb stick in the rear port #1 of nas and test with U-Boot
 
+##########################
+# If you're still running stock u-boot:
+##########################
+
 # prepare for mainline kernel
 setenv mainlineLinux yes
 
@@ -59,12 +77,16 @@ usb reset
 ext2load usb 0:1 $(loadaddr) /boot/uImage; ext2load usb 0:1 0x01100000 /boot/uInitramfs
 bootm $(loadaddr) 0x01100000
 
+##########################
+# If you flashed custom u-boot
+##########################
 
-### 
+You should be good to go
 
 
 
-The final output (stock u-boot) should be similar to this:
+
+The final output (stock u-boot and Debian 7) should be similar to this:
 
 ##############################################################################
          __  __                      _ _

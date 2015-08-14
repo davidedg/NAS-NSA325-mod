@@ -7,7 +7,8 @@ USE THE "vars.txt" commands to prepare the environment variables we will use.
 ##################################################
 
 The kernel can boot up directly into rootfs or use an intermediate initramfs image.
-OverlayFS feature needs initramfs.
+	OverlayFS feature needs initramfs.
+	boot and root on MD raid suggest initramfs (not strictly required with some tuning)
 
 
 I used BUSYBOX to reduce its size and had to write the init script from scratch (see credits section).
@@ -24,11 +25,13 @@ cd $NASINITRAMFS
 mkdir -p $NASINITRAMFS/stage/bin
 mkdir -p $NASINITRAMFS/stage/scripts
 
+
+
 # Get Busybox ARM binary
 unset http_proxy
-wget http://busybox.net/downloads/binaries/latest/busybox-armv5l -O $NASINITRAMFS/stage/bin/busybox
-chmod +x $NASINITRAMFS/stage/bin/busybox
-ln -s busybox $NASINITRAMFS/stage/bin/sh
+sudo wget http://busybox.net/downloads/binaries/latest/busybox-armv5l -O $NASINITRAMFS/stage/bin/busybox
+sudo chmod +x $NASINITRAMFS/stage/bin/busybox
+sudo ln -s busybox $NASINITRAMFS/stage/bin/sh
 
 
 # This script will automate the build process of initramfs image
@@ -47,45 +50,42 @@ chmod +x $NASINITRAMFS/make-uInitramfs
 # INITRAMFS INIT SCRIPTs
 ##################################################
 
-Now copy these files into the staging directory:
+Now copy these files into the staging directory (they'll need root owner)
 
 	init
 	scripts/local
 	scripts/functions
-
-Ensure init is executable
-chmod +x $NASINITRAMFS/stage/init
-
-
-##################################################
-# OVERLAYFS support
-##################################################
-	
-If you want OverlayFS support:
-
-Copy into staging directory:
+	scripts/init-top/mdadm
 	scripts/init-bottom/root-ro-overlayfs
+	bin/mdadm  (to compile this file see mdadm.txt)
 
-chmod +x $NASINITRAMFS/stage/scripts/init-bottom/root-ro-overlayfs
+#Ensure scripts are executable
+sudo chmod +x $NASINITRAMFS/stage/init
+sudo chmod +x $NASINITRAMFS/stage/bin/mdadm
+sudo chmod +x $NASINITRAMFS/stage/scripts/init-top/mdadm
+sudo chmod +x $NASINITRAMFS/stage/scripts/init-bottom/root-ro-overlayfs
 
+
+#Ensure init is executable
+sudo chmod +x $NASINITRAMFS/stage/init
 
 
 ##################################################
 # COMPILE INITRAMS
 ##################################################
 
-Fix Permissions:
+#Fix Permissions:
 sudo chown -R root:root $NASINITRAMFS/stage/*
-Make Image:
+#Make Image:
 cd $NASINITRAMFS
 sudo ./make-uInitramfs
-	2185 blocks
-	Image Name:   NSA-325-v2-Initramfs
-	Created:      Sat Jun 20 00:40:58 2015
-	Image Type:   ARM Linux RAMDisk Image (gzip compressed)
-	Data Size:    630673 Bytes = 615.89 kB = 0.60 MB
-	Load Address: 00000000
-	Entry Point:  00000000
+		2200 blocks
+		Image Name:   NSA-325-v2-Initramfs
+		Created:      Thu Aug  6 23:24:46 2015
+		Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+		Data Size:    633317 Bytes = 618.47 kB = 0.60 MB
+		Load Address: 00000000
+		Entry Point:  00000000
 
 
 
@@ -93,7 +93,7 @@ sudo ./make-uInitramfs
 # INSTALL INITRAMFS INTO ROOTFS
 ##################################################
 
-- COPY uInitramfs to RootFS for NAND:
+- COPY uInitramfs to RootFS:
 
 sudo cp $NASINITRAMFS/uInitramfs $RFShdd/boot/uInitramfs
 
