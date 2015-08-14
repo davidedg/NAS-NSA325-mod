@@ -1,6 +1,6 @@
 diff -Naur a/arch/arm/boot/dts/kirkwood-asus_m25.dts b/arch/arm/boot/dts/kirkwood-asus_m25.dts
 --- a/arch/arm/boot/dts/kirkwood-asus_m25.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-asus_m25.dts	2015-06-27 13:08:50.386640670 -0700
++++ b/arch/arm/boot/dts/kirkwood-asus_m25.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -0,0 +1,330 @@
 +/*
 + * Asus-M25 ( Marvell DB-88F6281-BP Development Board )
@@ -334,7 +334,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-asus_m25.dts b/arch/arm/boot/dts/kirkwoo
 +};
 diff -Naur a/arch/arm/boot/dts/kirkwood-goflexhome.dts b/arch/arm/boot/dts/kirkwood-goflexhome.dts
 --- a/arch/arm/boot/dts/kirkwood-goflexhome.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-goflexhome.dts	2015-06-27 13:08:50.386640670 -0700
++++ b/arch/arm/boot/dts/kirkwood-goflexhome.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -0,0 +1,127 @@
 +/dts-v1/;
 +
@@ -465,7 +465,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-goflexhome.dts b/arch/arm/boot/dts/kirkw
 +};
 diff -Naur a/arch/arm/boot/dts/kirkwood-goflexnet.dts b/arch/arm/boot/dts/kirkwood-goflexnet.dts
 --- a/arch/arm/boot/dts/kirkwood-goflexnet.dts	2015-06-21 22:05:43.000000000 -0700
-+++ b/arch/arm/boot/dts/kirkwood-goflexnet.dts	2015-06-27 13:08:50.416642532 -0700
++++ b/arch/arm/boot/dts/kirkwood-goflexnet.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -108,6 +108,7 @@
  		left3 {
  			label = "status:white:left3";
@@ -482,9 +482,119 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-goflexnet.dts b/arch/arm/boot/dts/kirkwo
  		};
  	};
  	regulators {
+diff -Naur a/arch/arm/boot/dts/kirkwood-iomega_ix4_200d.dts b/arch/arm/boot/dts/kirkwood-iomega_ix4_200d.dts
+--- a/arch/arm/boot/dts/kirkwood-iomega_ix4_200d.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-iomega_ix4_200d.dts	2015-07-14 14:47:27.000000000 -0700
+@@ -0,0 +1,106 @@
++/dts-v1/;
++
++#include "kirkwood.dtsi"      
++#include "kirkwood-6281.dtsi" 
++
++/ {
++	model = "Iomega ix4-200d";
++	compatible = "marvell,rd88f6281-a", "marvell,rd88f6281", "marvell,kirkwood-88f6281", "marvell,kirkwood";
++
++memory {                                    
++        device_type = "memory";             
++        reg = <0x00000000 0x20000000>;      
++};                                          
++                                            
++chosen {                                    
++        bootargs = "console=ttyS0,115200n8 earlyprintk";
++        stdout-path = &uart0;               
++};                                          
++                                            
++mbus {                                      
++        pcie-controller {                   
++                status = "okay";            
++                                            
++                pcie@1,0 {                  
++                        status = "okay";    
++                };                          
++        };                                  
++};
++
++ocp@f1000000 {
++
++	i2c@11000 {                                
++		status = "okay";                   
++						   
++		adt7473@2e {                       
++			compatible = "adi,adt7473";
++			reg = <0x2e>;              
++		};                                 
++	};                                         
++	
++        serial@12000 {                               
++                status = "ok";                       
++        };                                           
++                                                     
++        sata@80000 {                                 
++                status = "okay";                     
++                nr-ports = <2>;                      
++        };                                           
++                                                     
++};
++
++};
++
++&nand {                                    
++        status = "okay";                   
++                                           
++        partition@0 {                      
++                label = "u-boot";          
++                reg = <0x0000000 0xb0000>;
++                read-only;                 
++        };
++
++	partition@a0000 {
++                label = "env";
++                reg = <0xa0000 0x10000>;
++                read-only;
++        };
++                                           
++        partition@b0000 {                 
++                label = "uImage";          
++                reg = <0xb0000 0x224000>;
++        };                
++                                           
++        partition@2d4000 {                 
++                label = "uInitrd";          
++                reg = <0x2d4000 0x224000>;
++        };
++};                                         
++                                           
++&mdio {
++	status = "okay";
++
++	ethphy0: ethernet-phy@8 {
++		device_type = "ethernet-phy";
++		reg = <8>;
++	};
++
++	ethphy1: ethernet-phy@9 {
++		device_type = "ethernet-phy";
++		reg = <9>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
++
++&eth1 {
++	status = "okay";
++	ethernet1-port@0 {
++		phy-handle = <&ethphy1>;
++	};
++};
 diff -Naur a/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts b/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts
 --- a/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts	2015-06-29 02:18:35.969432559 -0700
++++ b/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts	2015-06-29 02:18:35.000000000 -0700
 @@ -0,0 +1,227 @@
 +/dts-v1/;
 +
@@ -713,9 +823,366 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-netgear_stora_ms2000.dts b/arch/arm/boot
 +		phy-handle = <&ethphy0>;
 +	};
 +};
+diff -Naur a/arch/arm/boot/dts/kirkwood-nsa310s.dts b/arch/arm/boot/dts/kirkwood-nsa310s.dts
+--- a/arch/arm/boot/dts/kirkwood-nsa310s.dts	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/boot/dts/kirkwood-nsa310s.dts	2015-07-27 15:30:36.000000000 -0700
+@@ -0,0 +1,353 @@
++/* Device tree file for the Zyxel NSA 310 NAS box.
++ *
++ * Copyright (c) 2015, bodhi <mibodhix@gmail.com>
++ *
++ * Based on
++ * Device tree file for the Zyxel NSA 320 NAS box.
++ *
++ * Copyright (c) 2014, Adam Baker <linux@baker-net.org.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * Based upon the board setup file created by Peter Schildmann */
++
++/dts-v1/;
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6281.dtsi"
++
++/ {
++	model = "Zyxel NSA310S";
++	compatible = "zyxel,nsa320s", "marvell,kirkwood-88f6702", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++		stdout-path = &uart0;
++	};
++
++	mbus {
++		pcie-controller {
++			status = "okay";
++
++			pcie@1,0 {
++				status = "okay";
++			};
++		};
++	};
++
++	ocp@f1000000 {
++		pinctrl: pin-controller@10000 {
++			pinctrl-names = "default";
++
++			pmx_sata0: pmx-sata0 {
++				marvell,pins ; /* NA */
++				marvell,function = "sata0";
++			};
++
++			pmx_sata1: pmx-sata1 {
++				marvell,pins ; /* NA */
++				marvell,function = "sata1";
++			};
++
++                        pmx_usb_power: pmx-usb-power {
++                                marvell,pins = "mpp21"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++                        pmx_pwr_off: pmx-pwr-off {
++                                marvell,pins = "mpp27"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++                        pmx_btn_reset: pmx-btn-reset {
++                                marvell,pins = "mpp24"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++                        pmx_btn_copy: pmx-btn-copy {
++                                marvell,pins = "mpp25"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++                        pmx_btn_power: pmx-btn-power {
++                                marvell,pins = "mpp26"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++			pmx_led_hdd2_green: pmx-led-hdd2-green {
++				marvell,pins = "mpp34"; /* OK */
++				marvell,function = "gpio";
++			};
++
++			pmx_led_hdd2_red: pmx-led-hdd2-red {
++				marvell,pins = "mpp12"; /* OK */
++				marvell,function = "gpio";
++			};
++
++			pmx_led_usb_green: pmx-led-usb-green {
++				marvell,pins = "mpp15"; /* OK */
++				marvell,function = "gpio";
++			};
++
++                        pmx_led_copy_green: pmx-led-copy-green {
++                                marvell,pins = "mpp22"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++                        pmx_led_copy_red: pmx-led-copy-red {
++                                marvell,pins = "mpp23"; /* OK */
++                                marvell,function = "gpio";
++                        };
++
++			pmx_led_sys_green: pmx-led-sys-green {
++				marvell,pins = "mpp28"; /* OK */
++				marvell,function = "gpio";
++			};
++
++			pmx_led_sys_orange: pmx-led-sys-orange {
++				marvell,pins = "mpp29"; /* OK */
++				marvell,function = "gpio";
++			};
++
++			pmx_led_hdd1_green: pmx-led-hdd1-green {
++				marvell,pins = "mpp16"; /* OK */
++				marvell,function = "gpio";
++			};
++
++			pmx_led_hdd1_red: pmx-led-hdd1-red {
++				marvell,pins = "mpp13"; /* OK */
++				marvell,function = "gpio";
++			};
++
++/*
++			pmx_buzzer: pmx-buzzer {
++				marvell,pins = "mpp20";
++				marvell,function = "gpio";
++			};
++*/
++
++			pmx_pwr_sata1: pmx-pwr-sata1 {
++				marvell,pins = "mpp33";
++				marvell,function = "gpio";
++			};
++
++			pmx_power_resume_data: pmx-power-resume-data {
++				marvell,pins = "mpp47";
++				marvell,function = "gpio";
++			};
++
++			pmx_power_resume_clk: pmx-power-resume-clk {
++				marvell,pins = "mpp49";
++				marvell,function = "gpio";
++			};
++		};
++
++                serial@12000 {
++                        status = "ok";
++                };
++
++                sata@80000 {
++                        status = "okay";
++                        nr-ports = <2>;
++                };
++
++		rtc@10300 {
++			status = "disabled";
++		};
++
++		i2c@11000 {
++			status = "okay";
++			ht1382: rtc@68 {
++				compatible = "htk,ht1382";
++				reg = <0x68>;
++			};
++		};
++	};
++
++	regulators {
++                compatible = "simple-bus";
++                #address-cells = <1>;
++                #size-cells = <0>;
++                pinctrl-names = "default";
++		pinctrl-0 = <&pmx_usb_power &pmx_pwr_sata1>;
++
++                usb0_power: regulator@1 {
++                        compatible = "regulator-fixed";
++                        reg = <1>;
++                        regulator-name = "USB Power";
++                        regulator-min-microvolt = <5000000>;
++                        regulator-max-microvolt = <5000000>;
++                        regulator-always-on;
++                        regulator-boot-on;
++			enable-active-high;
++                        gpio = <&gpio0 21 GPIO_ACTIVE_HIGH>;
++                };
++
++		sata1_power: regulator@2 {
++			compatible = "regulator-fixed";
++			reg = <2>;
++			regulator-name = "SATA1 Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			regulator-always-on;
++			regulator-boot-on;
++			enable-active-high;
++			gpio = <&gpio1 1 GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++        gpio_poweroff {
++                compatible = "gpio-poweroff";
++                pinctrl-0 = <&pmx_pwr_off>;
++                pinctrl-names = "default";
++                gpios = <&gpio0 27 GPIO_ACTIVE_HIGH>;
++        };
++
++        gpio_keys {
++                compatible = "gpio-keys";
++                #address-cells = <1>;
++                #size-cells = <0>;
++                pinctrl-0 = <&pmx_btn_reset &pmx_btn_copy &pmx_btn_power>;
++                pinctrl-names = "default";
++
++                button@1 {
++                        label = "Power Button";
++                        linux,code = <KEY_POWER>;
++                        gpios = <&gpio0 26 GPIO_ACTIVE_HIGH>;
++                };
++                button@2 {
++                        label = "Copy Button";
++                        linux,code = <KEY_COPY>;
++                        gpios = <&gpio0 25 GPIO_ACTIVE_LOW>;
++                };
++                button@3 {
++                        label = "Reset Button";
++                        linux,code = <KEY_RESTART>;
++                        gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
++                };
++        };
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <&pmx_led_hdd2_green &pmx_led_hdd2_red
++			     &pmx_led_usb_green
++			     &pmx_led_sys_green &pmx_led_sys_orange
++			     &pmx_led_copy_green &pmx_led_copy_red
++			     &pmx_led_hdd1_green &pmx_led_hdd1_red>;
++		pinctrl-names = "default";
++
++		green-sys {
++			label = "nsa310s:green:sys";
++			gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "timer";
++		};
++		orange-sys {
++			label = "nsa310s:orange:sys";
++			gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
++		};
++		green-hdd1 {
++			label = "nsa310s:green:hdd1";
++			gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
++		};
++		red-hdd1 {
++			label = "nsa310s:red:hdd1";
++			gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
++		};
++		green-hdd2 {
++			label = "nsa310s:green:hdd2";
++			gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
++		};
++		red-hdd2 {
++			label = "nsa310s:red:hdd2";
++			gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
++		};
++		green-usb {
++			label = "nsa310s:green:usb";
++			gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
++		};
++		green-copy {
++			label = "nsa310s:green:copy";
++			gpios = <&gpio0 22 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "ide-disk";
++		};
++		red-copy {
++			label = "nsa310s:red:copy";
++			gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
++
++&nand {
++        status = "okay";
++        chip-delay = <35>;
++
++        partition@0 {
++                label = "uboot";
++                reg = <0x0000000 0x0100000>;
++                read-only;
++        };
++        partition@100000 {
++                label = "uboot_env";
++                reg = <0x0100000 0x0080000>;
++        };
++        partition@180000 {
++                label = "key_store";
++                reg = <0x0180000 0x0080000>;
++        };
++        partition@200000 {
++                label = "info";
++                reg = <0x0200000 0x0080000>;
++        };
++        partition@280000 {
++                label = "etc";
++                reg = <0x0280000 0x0a00000>;
++        };
++        partition@c80000 {
++                label = "kernel_1";
++                reg = <0x0c80000 0x0a00000>;
++        };
++        partition@1680000 {
++                label = "rootfs1";
++                reg = <0x1680000 0x2fc0000>;
++        };
++        partition@4640000 {
++                label = "kernel_2";
++                reg = <0x4640000 0x0a00000>;
++        };
++        partition@5040000 {
++                label = "rootfs2";
++                reg = <0x5040000 0x2fc0000>;
++        };
++};
++
++&mdio {
++	status = "okay";
++	ethphy0: ethernet-phy@1 {
++		compatible = "marvell,88e1318s";
++		reg = <1>;
++                marvell,reg-init = <0x1 0x16 0x0 0x3>,
++                                   <0x1 0x10 0x0 0x1017>,
++                                   <0x1 0x11 0x0 0x4408>,
++                                   <0x1 0x16 0x0 0x0>,
++                                   <0x1 0x4 0x0 0x1e1>,
++                                   <0x1 0x9 0x0 0x300>,
++                                   <0x1 0x10 0x0 0x3860>,
++                                   <0x1 0x0 0x0 0x9140>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
++
 diff -Naur a/arch/arm/boot/dts/kirkwood-nsa320s.dts b/arch/arm/boot/dts/kirkwood-nsa320s.dts
 --- a/arch/arm/boot/dts/kirkwood-nsa320s.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-nsa320s.dts	2015-06-27 13:08:50.426643153 -0700
++++ b/arch/arm/boot/dts/kirkwood-nsa320s.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -0,0 +1,339 @@
 +/* Device tree file for the Zyxel NSA 320 NAS box.
 + *
@@ -1058,7 +1525,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-nsa320s.dts b/arch/arm/boot/dts/kirkwood
 +
 diff -Naur a/arch/arm/boot/dts/kirkwood-nsa325.dts b/arch/arm/boot/dts/kirkwood-nsa325.dts
 --- a/arch/arm/boot/dts/kirkwood-nsa325.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-nsa325.dts	2015-06-27 13:08:50.426643153 -0700
++++ b/arch/arm/boot/dts/kirkwood-nsa325.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -0,0 +1,360 @@
 +/*
 + * Device tree file for Zyxel NSA 325 NAS
@@ -1422,7 +1889,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-nsa325.dts b/arch/arm/boot/dts/kirkwood-
 +};
 diff -Naur a/arch/arm/boot/dts/kirkwood-pogo_e02.dts b/arch/arm/boot/dts/kirkwood-pogo_e02.dts
 --- a/arch/arm/boot/dts/kirkwood-pogo_e02.dts	2015-06-21 22:05:43.000000000 -0700
-+++ b/arch/arm/boot/dts/kirkwood-pogo_e02.dts	2015-06-27 13:08:50.436643774 -0700
++++ b/arch/arm/boot/dts/kirkwood-pogo_e02.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -1,26 +1,11 @@
 -/*
 - * kirkwood-pogo_e02.dts - Device tree file for Pogoplug E02
@@ -1573,7 +2040,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-pogo_e02.dts b/arch/arm/boot/dts/kirkwoo
  
 diff -Naur a/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts b/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts
 --- a/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts	1969-12-31 16:00:00.000000000 -0800
-+++ b/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts	2015-06-27 13:08:50.436643774 -0700
++++ b/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts	2015-06-27 13:08:50.000000000 -0700
 @@ -0,0 +1,164 @@
 +/dts-v1/;
 +
@@ -1741,7 +2208,7 @@ diff -Naur a/arch/arm/boot/dts/kirkwood-pogoplug_v4.dts b/arch/arm/boot/dts/kirk
 +};
 diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
 --- a/arch/arm/boot/dts/Makefile	2015-06-21 22:05:43.000000000 -0700
-+++ b/arch/arm/boot/dts/Makefile	2015-06-27 13:08:50.446644395 -0700
++++ b/arch/arm/boot/dts/Makefile	2015-07-12 11:56:15.000000000 -0700
 @@ -134,8 +134,7 @@
  	k2hk-evm.dtb \
  	k2l-evm.dtb \
@@ -1752,7 +2219,7 @@ diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
  	kirkwood-blackarmor-nas220.dtb \
  	kirkwood-cloudbox.dtb \
  	kirkwood-d2net.dtb \
-@@ -158,6 +157,7 @@
+@@ -158,11 +157,13 @@
  	kirkwood-ds411.dtb \
  	kirkwood-ds411j.dtb \
  	kirkwood-ds411slim.dtb \
@@ -1760,7 +2227,13 @@ diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
  	kirkwood-goflexnet.dtb \
  	kirkwood-guruplug-server-plus.dtb \
  	kirkwood-ib62x0.dtb \
-@@ -175,18 +175,23 @@
+ 	kirkwood-iconnect.dtb \
+ 	kirkwood-iomega_ix2_200.dtb \
++	kirkwood-iomega_ix4_200d.dtb \
+ 	kirkwood-is2.dtb \
+ 	kirkwood-km_kirkwood.dtb \
+ 	kirkwood-laplug.dtb \
+@@ -175,18 +176,24 @@
  	kirkwood-net5big.dtb \
  	kirkwood-netgear_readynas_duo_v2.dtb \
  	kirkwood-netgear_readynas_nv+_v2.dtb \
@@ -1771,6 +2244,7 @@ diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
  	kirkwood-ns2mini.dtb \
  	kirkwood-nsa310.dtb \
  	kirkwood-nsa310a.dtb \
++        kirkwood-nsa310s.dtb \
 +        kirkwood-nsa320.dtb \
 +	kirkwood-nsa320s.dtb \
 +        kirkwood-nsa325.dtb \
@@ -1784,7 +2258,7 @@ diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
  	kirkwood-rd88f6192.dtb \
  	kirkwood-rd88f6281-z0.dtb \
  	kirkwood-rd88f6281-a.dtb \
-@@ -200,7 +205,8 @@
+@@ -200,7 +207,8 @@
  	kirkwood-ts219-6281.dtb \
  	kirkwood-ts219-6282.dtb \
  	kirkwood-ts419-6281.dtb \
@@ -1794,9 +2268,17 @@ diff -Naur a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
  dtb-$(CONFIG_ARCH_LPC32XX) += \
  	ea3250.dtb phy3250.dtb
  dtb-$(CONFIG_MACH_MESON6) += \
+diff -Naur a/arch/arm/mach-mvebu/Makefile b/arch/arm/mach-mvebu/Makefile
+--- a/arch/arm/mach-mvebu/Makefile	2015-06-21 22:05:43.000000000 -0700
++++ b/arch/arm/mach-mvebu/Makefile	2015-07-30 15:04:16.000000000 -0700
+@@ -14,3 +14,4 @@
+ obj-$(CONFIG_MACH_DOVE)		 += dove.o
+ obj-$(CONFIG_MACH_KIRKWOOD)	 += kirkwood.o kirkwood-pm.o
+ obj-$(CONFIG_MACH_NETXBIG)	 += netxbig.o
++
 diff -Naur a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
 --- a/arch/arm/plat-orion/common.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/arch/arm/plat-orion/common.c	2015-06-27 13:08:50.496647498 -0700
++++ b/arch/arm/plat-orion/common.c	2015-06-27 13:08:50.000000000 -0700
 @@ -257,7 +257,9 @@
  /*****************************************************************************
   * GE00
@@ -1810,8 +2292,8 @@ diff -Naur a/arch/arm/plat-orion/common.c b/arch/arm/plat-orion/common.c
  	{
 diff -Naur a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
 --- a/arch/arm/tools/mach-types	2015-06-21 22:05:43.000000000 -0700
-+++ b/arch/arm/tools/mach-types	2015-06-27 13:08:50.556651223 -0700
-@@ -1006,3 +1006,12 @@
++++ b/arch/arm/tools/mach-types	2015-07-29 13:26:35.000000000 -0700
+@@ -1006,3 +1006,13 @@
  eukrea_cpuimx28sd	MACH_EUKREA_CPUIMX28SD	EUKREA_CPUIMX28SD	4573
  domotab			MACH_DOMOTAB		DOMOTAB			4574
  pfla03			MACH_PFLA03		PFLA03			4575
@@ -1824,9 +2306,10 @@ diff -Naur a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
 +pogoplugv3		MACH_POGOPLUGV3		POGOPLUGV3		3973
 +pogoplugv3pci		MACH_POGOPLUGV3PCI	POGOPLUGV3PCI		3976
 +nsa310			MACH_NSA310		NSA310			4022
++nsa310s                 MACH_NSA310S            NSA310S                 4931
 diff -Naur a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
 --- a/drivers/ata/sata_mv.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/ata/sata_mv.c	2015-06-27 13:08:50.646656809 -0700
++++ b/drivers/ata/sata_mv.c	2015-06-27 13:08:50.000000000 -0700
 @@ -1,6 +1,7 @@
  /*
   * sata_mv.c - Marvell SATA support
@@ -1854,7 +2337,7 @@ diff -Naur a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
  		if (want_ncq != using_ncq)
 diff -Naur a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
 --- a/drivers/hwmon/Kconfig	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/hwmon/Kconfig	2015-06-27 13:08:54.846917519 -0700
++++ b/drivers/hwmon/Kconfig	2015-06-27 13:08:54.000000000 -0700
 @@ -1715,6 +1715,19 @@
  	  This driver provides support for the Ultra45 workstation environmental
  	  sensors.
@@ -1877,7 +2360,7 @@ diff -Naur a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
  comment "ACPI drivers"
 diff -Naur a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
 --- a/drivers/hwmon/Makefile	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/hwmon/Makefile	2015-06-27 13:08:54.846917519 -0700
++++ b/drivers/hwmon/Makefile	2015-06-27 13:08:54.000000000 -0700
 @@ -115,6 +115,7 @@
  obj-$(CONFIG_SENSORS_MAX6650)	+= max6650.o
  obj-$(CONFIG_SENSORS_MAX6697)	+= max6697.o
@@ -1888,7 +2371,7 @@ diff -Naur a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
  obj-$(CONFIG_SENSORS_NCT6683)	+= nct6683.o
 diff -Naur a/drivers/hwmon/nsa3xx-hwmon.c b/drivers/hwmon/nsa3xx-hwmon.c
 --- a/drivers/hwmon/nsa3xx-hwmon.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/hwmon/nsa3xx-hwmon.c	2015-06-27 13:08:54.866918761 -0700
++++ b/drivers/hwmon/nsa3xx-hwmon.c	2015-06-27 13:08:54.000000000 -0700
 @@ -0,0 +1,251 @@
 +/*
 + * drivers/hwmon/nsa3xx-hwmon.c
@@ -2143,7 +2626,7 @@ diff -Naur a/drivers/hwmon/nsa3xx-hwmon.c b/drivers/hwmon/nsa3xx-hwmon.c
 +MODULE_ALIAS("platform:nsa3xx-hwmon");
 diff -Naur a/drivers/leds/Kconfig b/drivers/leds/Kconfig
 --- a/drivers/leds/Kconfig	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/leds/Kconfig	2015-06-27 13:08:54.896920623 -0700
++++ b/drivers/leds/Kconfig	2015-06-27 13:08:54.000000000 -0700
 @@ -534,6 +534,106 @@
  	  This option enables support for the 'White' LED block
  	  on Qualcomm PM8941 PMICs.
@@ -2253,7 +2736,7 @@ diff -Naur a/drivers/leds/Kconfig b/drivers/leds/Kconfig
  
 diff -Naur a/drivers/leds/trigger/ledtrig-ide-disk.c b/drivers/leds/trigger/ledtrig-ide-disk.c
 --- a/drivers/leds/trigger/ledtrig-ide-disk.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/leds/trigger/ledtrig-ide-disk.c	2015-06-27 13:08:54.906921244 -0700
++++ b/drivers/leds/trigger/ledtrig-ide-disk.c	2015-06-27 13:08:54.000000000 -0700
 @@ -1,8 +1,10 @@
  /*
   * LED IDE-Disk Activity Trigger
@@ -2311,7 +2794,7 @@ diff -Naur a/drivers/leds/trigger/ledtrig-ide-disk.c b/drivers/leds/trigger/ledt
  module_init(ledtrig_ide_init);
 diff -Naur a/drivers/media/rc/Kconfig b/drivers/media/rc/Kconfig
 --- a/drivers/media/rc/Kconfig	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/media/rc/Kconfig	2015-06-27 13:08:54.946923726 -0700
++++ b/drivers/media/rc/Kconfig	2015-06-27 13:08:54.000000000 -0700
 @@ -23,6 +23,17 @@
  	   LIRC daemon handles protocol decoding for IR reception and
  	   encoding for IR transmitting (aka "blasting").
@@ -2332,7 +2815,7 @@ diff -Naur a/drivers/media/rc/Kconfig b/drivers/media/rc/Kconfig
  	depends on RC_CORE
 diff -Naur a/drivers/media/rc/lirc_rpi.c b/drivers/media/rc/lirc_rpi.c
 --- a/drivers/media/rc/lirc_rpi.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/media/rc/lirc_rpi.c	2015-06-27 13:08:54.956924347 -0700
++++ b/drivers/media/rc/lirc_rpi.c	2015-06-27 13:08:54.000000000 -0700
 @@ -0,0 +1,797 @@
 +/*
 + * lirc_rpi.c
@@ -3133,7 +3616,7 @@ diff -Naur a/drivers/media/rc/lirc_rpi.c b/drivers/media/rc/lirc_rpi.c
 +MODULE_PARM_DESC(debug, "Enable debugging messages");
 diff -Naur a/drivers/media/rc/Makefile b/drivers/media/rc/Makefile
 --- a/drivers/media/rc/Makefile	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/media/rc/Makefile	2015-06-27 13:08:54.956924347 -0700
++++ b/drivers/media/rc/Makefile	2015-06-27 13:08:54.000000000 -0700
 @@ -4,6 +4,7 @@
  
  obj-$(CONFIG_RC_CORE) += rc-core.o
@@ -3144,7 +3627,7 @@ diff -Naur a/drivers/media/rc/Makefile b/drivers/media/rc/Makefile
  obj-$(CONFIG_IR_RC6_DECODER) += ir-rc6-decoder.o
 diff -Naur a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw2102.c
 --- a/drivers/media/usb/dvb-usb/dw2102.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/media/usb/dvb-usb/dw2102.c	2015-06-28 00:56:13.168148781 -0700
++++ b/drivers/media/usb/dvb-usb/dw2102.c	2015-06-28 00:56:13.000000000 -0700
 @@ -117,8 +117,13 @@
  
  struct dw2102_state {
@@ -3484,7 +3967,7 @@ diff -Naur a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw21
  
 diff -Naur a/drivers/media/usb/dvb-usb/dw2102.h b/drivers/media/usb/dvb-usb/dw2102.h
 --- a/drivers/media/usb/dvb-usb/dw2102.h	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/media/usb/dvb-usb/dw2102.h	2015-06-28 00:56:05.117625005 -0700
++++ b/drivers/media/usb/dvb-usb/dw2102.h	2015-06-28 00:56:05.000000000 -0700
 @@ -4,6 +4,7 @@
  #define DVB_USB_LOG_PREFIX "dw2102"
  #include "dvb-usb.h"
@@ -3495,7 +3978,7 @@ diff -Naur a/drivers/media/usb/dvb-usb/dw2102.h b/drivers/media/usb/dvb-usb/dw21
  #endif
 diff -Naur a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
 --- a/drivers/mmc/core/sd.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/mmc/core/sd.c	2015-06-27 13:08:54.986926209 -0700
++++ b/drivers/mmc/core/sd.c	2015-06-27 13:08:54.000000000 -0700
 @@ -366,6 +366,15 @@
  		return -ENOMEM;
  	}
@@ -3514,8 +3997,63 @@ diff -Naur a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
  		goto out;
 diff -Naur a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
 --- a/drivers/net/ethernet/marvell/mv643xx_eth.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/net/ethernet/marvell/mv643xx_eth.c	2015-06-27 13:08:55.026928692 -0700
-@@ -3150,7 +3150,7 @@
++++ b/drivers/net/ethernet/marvell/mv643xx_eth.c	2015-08-07 18:49:56.000000000 -0700
+@@ -1,5 +1,11 @@
+ /*
+  * Driver for Marvell Discovery (MV643XX) and Marvell Orion ethernet ports
++ *
++ * Copyright (C) 2015 bodhi <mibodhi@gmail.com>
++ * Copyright (C) 2015 michal osowiecki <michal.osowiecki@gmail.com>
++ *
++ * Based on
++ * Copyright (C) 2002 Matthew Dharm <mdharm@momenco.com>
+  * Copyright (C) 2002 Matthew Dharm <mdharm@momenco.com>
+  *
+  * Based on the 64360 driver from:
+@@ -2310,8 +2316,22 @@
+ 		phy_init_hw(mp->phy);
+ 		mv643xx_eth_set_settings(mp->dev, &cmd);
+ 		phy_start(mp->phy);
+-	}
+ 
++		/* For these devive, the MCU set the phy to 10-Mb mode as low-power status.
++		 * We have to set it back when booting up.
++		 * Set the phy back to auto-negotiation mode 
++		*/
++                if ( of_machine_is_compatible("zyxel,nsa310s") ||
++			of_machine_is_compatible("zyxel,nsa320s") ||
++			of_machine_is_compatible("zyxel,nsa320") ||
++			of_machine_is_compatible("zyxel,nsa325") ) {
++
++			printk ("mv643xx_eth: Set the PHY back to auto-negotiation mode");
++			phy_write(mp->phy, 0x4, 0x1e1);
++			phy_write(mp->phy, 0x9, 0x300);
++			phy_write(mp->phy, 0x0, 0x9140);
++		}
++	}
+ 	/*
+ 	 * Configure basic link parameters.
+ 	 */
+@@ -3099,6 +3119,18 @@
+ 		mp->phy = of_phy_connect(mp->dev, pd->phy_node,
+ 					 mv643xx_eth_adjust_link, 0,
+ 					 PHY_INTERFACE_MODE_GMII);
++
++		/* For these devices, set the PHY to fix link down after coming up from power off */
++                if ( of_machine_is_compatible("zyxel,nsa310s") ||
++                        of_machine_is_compatible("zyxel,nsa320s") ||
++                        of_machine_is_compatible("zyxel,nsa320") ||
++                        of_machine_is_compatible("zyxel,nsa325") ) {
++
++                	printk ("mv643xx_eth: Set the PHY to fix link down");
++			phy_write(mp->phy, 22, 0x3);
++			phy_write(mp->phy, 22, 0x0);
++		}
++
+ 		if (!mp->phy)
+ 			err = -ENODEV;
+ 		else
+@@ -3150,7 +3182,7 @@
  	dev->watchdog_timeo = 2 * HZ;
  	dev->base_addr = 0;
  
@@ -3526,7 +4064,7 @@ diff -Naur a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/m
  	dev->features |= NETIF_F_RXCSUM;
 diff -Naur a/drivers/net/Kconfig b/drivers/net/Kconfig
 --- a/drivers/net/Kconfig	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/net/Kconfig	2015-06-27 13:08:55.036929313 -0700
++++ b/drivers/net/Kconfig	2015-06-27 13:08:55.000000000 -0700
 @@ -26,6 +26,7 @@
  if NETDEVICES
  
@@ -3535,9 +4073,27 @@ diff -Naur a/drivers/net/Kconfig b/drivers/net/Kconfig
  	tristate
  
  config NET_CORE
+diff -Naur a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+--- a/drivers/net/phy/Kconfig	2015-06-21 22:05:43.000000000 -0700
++++ b/drivers/net/phy/Kconfig	2015-07-30 23:20:11.000000000 -0700
+@@ -35,7 +35,7 @@
+ 	tristate "Drivers for Marvell PHYs"
+ 	---help---
+ 	  Currently has a driver for the 88E1011S
+-	
++
+ config DAVICOM_PHY
+ 	tristate "Drivers for Davicom PHYs"
+ 	---help---
+@@ -218,3 +218,5 @@
+ config MICREL_KS8995MA
+ 	tristate "Micrel KS8995MA 5-ports 10/100 managed Ethernet switch"
+ 	depends on SPI
++
++
 diff -Naur a/drivers/pinctrl/mvebu/pinctrl-kirkwood.c b/drivers/pinctrl/mvebu/pinctrl-kirkwood.c
 --- a/drivers/pinctrl/mvebu/pinctrl-kirkwood.c	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/pinctrl/mvebu/pinctrl-kirkwood.c	2015-06-27 13:08:55.086932417 -0700
++++ b/drivers/pinctrl/mvebu/pinctrl-kirkwood.c	2015-07-26 03:47:29.000000000 -0700
 @@ -120,7 +120,7 @@
  		MPP_VAR_FUNCTION(0x5, "sata0", "act",    V(0, 1, 1, 1, 1, 0))),
  	MPP_MODE(12,
@@ -3547,9 +4103,27 @@ diff -Naur a/drivers/pinctrl/mvebu/pinctrl-kirkwood.c b/drivers/pinctrl/mvebu/pi
  		MPP_VAR_FUNCTION(0x1, "sdio", "clk",     V(1, 1, 1, 1, 1, 0)),
  		MPP_VAR_FUNCTION(0xa, "audio", "spdifo", V(0, 0, 0, 0, 1, 0)),
  		MPP_VAR_FUNCTION(0xb, "spi", "mosi",     V(0, 0, 0, 0, 1, 0)),
+@@ -351,7 +351,7 @@
+ 		MPP_VAR_FUNCTION(0x2, "tdm", "fs",       V(0, 0, 0, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0xb, "lcd", "hsync",    V(0, 0, 0, 0, 1, 0))),
+ 	MPP_MODE(47,
+-		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(0, 0, 0, 1, 1, 0)),
++		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(1, 1, 1, 1, 1, 1)),
+ 		MPP_VAR_FUNCTION(0x1, "ts", "mp11",      V(0, 0, 0, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0x2, "tdm", "drx",      V(0, 0, 0, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0xb, "lcd", "vsync",    V(0, 0, 0, 0, 1, 0))),
+@@ -361,7 +361,7 @@
+ 		MPP_VAR_FUNCTION(0x2, "tdm", "dtx",      V(0, 0, 0, 1, 1, 0)),
+ 		MPP_VAR_FUNCTION(0xb, "lcd", "d16",      V(0, 0, 0, 0, 1, 0))),
+ 	MPP_MODE(49,
+-		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(0, 0, 0, 1, 0, 1)),
++		MPP_VAR_FUNCTION(0x0, "gpio", NULL,      V(1, 1, 1, 1, 1, 1)),
+ 		MPP_VAR_FUNCTION(0x0, "gpo", NULL,       V(0, 0, 0, 0, 1, 0)),
+ 		MPP_VAR_FUNCTION(0x1, "ts", "mp9",       V(0, 0, 0, 1, 0, 0)),
+ 		MPP_VAR_FUNCTION(0x2, "tdm", "rx0ql",    V(0, 0, 0, 1, 1, 0)),
 diff -Naur a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
 --- a/drivers/rtc/Kconfig	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/rtc/Kconfig	2015-06-27 13:08:55.116934279 -0700
++++ b/drivers/rtc/Kconfig	2015-06-27 13:08:55.000000000 -0700
 @@ -241,6 +241,15 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called rtc-ds3232.
@@ -3568,7 +4142,7 @@ diff -Naur a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
  	depends on I2C && OF
 diff -Naur a/drivers/rtc/Makefile b/drivers/rtc/Makefile
 --- a/drivers/rtc/Makefile	2015-06-21 22:05:43.000000000 -0700
-+++ b/drivers/rtc/Makefile	2015-06-27 13:08:55.126934900 -0700
++++ b/drivers/rtc/Makefile	2015-06-27 13:08:55.000000000 -0700
 @@ -67,6 +67,7 @@
  obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
  obj-$(CONFIG_RTC_DRV_GENERIC)	+= rtc-generic.o
@@ -3579,11 +4153,15 @@ diff -Naur a/drivers/rtc/Makefile b/drivers/rtc/Makefile
  obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
 diff -Naur a/drivers/rtc/rtc-ht1382.c b/drivers/rtc/rtc-ht1382.c
 --- a/drivers/rtc/rtc-ht1382.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/rtc/rtc-ht1382.c	2015-06-27 13:08:55.126934900 -0700
-@@ -0,0 +1,209 @@
++++ b/drivers/rtc/rtc-ht1382.c	2015-08-07 18:50:19.000000000 -0700
+@@ -0,0 +1,213 @@
 +/*
 + * Driver for Holtek HT1382 RTC.
 + *
++ * Copyright (C) 2015 bodhi <mibodhi@gmail.com>
++ * Copyright (C) 2015 michal osowiecki <michal.osowiecki@gmail.com>
++ *
++ * Based on
 + * Copyright (C) 2015 Karoly Pocsi <chrlee@chrlee.net>
 + *
 + * Based on bq32k driver by Semihalf and Pavel Machek
@@ -3714,7 +4292,7 @@ diff -Naur a/drivers/rtc/rtc-ht1382.c b/drivers/rtc/rtc-ht1382.c
 +
 +	regs.second = bin2bcd(tm->tm_sec);
 +	regs.minute = bin2bcd(tm->tm_min);
-+	regs.hour = bin2bcd(tm->tm_hour);
++	regs.hour = bin2bcd(tm->tm_hour) | HT1382_HOUR_1224;
 +	regs.day = bin2bcd(tm->tm_wday + 1);
 +	regs.date = bin2bcd(tm->tm_mday);
 +	regs.month = bin2bcd(tm->tm_mon + 1);
@@ -3792,7 +4370,7 @@ diff -Naur a/drivers/rtc/rtc-ht1382.c b/drivers/rtc/rtc-ht1382.c
 +MODULE_LICENSE("GPL");
 diff -Naur a/include/linux/ide.h b/include/linux/ide.h
 --- a/include/linux/ide.h	2015-06-21 22:05:43.000000000 -0700
-+++ b/include/linux/ide.h	2015-06-27 13:08:55.156936762 -0700
++++ b/include/linux/ide.h	2015-06-27 13:08:55.000000000 -0700
 @@ -1516,7 +1516,10 @@
  
  static inline void ide_dump_identify(u8 *id)
@@ -3807,7 +4385,7 @@ diff -Naur a/include/linux/ide.h b/include/linux/ide.h
  static inline int hwif_to_node(ide_hwif_t *hwif)
 diff -Naur a/include/linux/leds.h b/include/linux/leds.h
 --- a/include/linux/leds.h	2015-06-21 22:05:43.000000000 -0700
-+++ b/include/linux/leds.h	2015-06-27 13:08:55.176938003 -0700
++++ b/include/linux/leds.h	2015-06-27 13:08:55.000000000 -0700
 @@ -1,6 +1,7 @@
  /*
   * Driver model for leds and led triggers
@@ -3830,7 +4408,7 @@ diff -Naur a/include/linux/leds.h b/include/linux/leds.h
  #if defined(CONFIG_LEDS_TRIGGER_CAMERA) || defined(CONFIG_LEDS_TRIGGER_CAMERA_MODULE)
 diff -Naur a/include/linux/nsa3xx-hwmon.h b/include/linux/nsa3xx-hwmon.h
 --- a/include/linux/nsa3xx-hwmon.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/linux/nsa3xx-hwmon.h	2015-06-27 13:08:55.176938003 -0700
++++ b/include/linux/nsa3xx-hwmon.h	2015-06-27 13:08:55.000000000 -0700
 @@ -0,0 +1,21 @@
 +/*
 + * include/linux/nsa3xx.hwmon.h

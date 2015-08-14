@@ -26,9 +26,9 @@ Feel free to explore and add/remove features at your preference.
 Since Kernel 3.17 a DTS file is available to compile a working DTB (see credits)
 
 
-# You can download vanilla 4.04+ kernel and patch:
+# You can download vanilla 4.x kernel and patch:
 cd $KERNELWORKDIR/$KERNELCURRENT
-patch -p1 < ../linux-4.0.0-kirkwood-tld-2.patch
+patch -p1 < ../linux-4.1.0-kirkwood-tld-2.patch
 
 
 ## Prep tree
@@ -112,7 +112,7 @@ CONFIG_BLK_DEV_INITRD=y
 CONFIG_DEVTMPFS=y
 CONFIG_DEVTMPFS_MOUNT=y
 # NetConsole support
-CONFIG_NETCONSOLE=m
+CONFIG_NETCONSOLE=y
 EOF
 
 
@@ -141,6 +141,67 @@ CONFIG_IKCONFIG_PROC=y
 # Prepends timings
 CONFIG_PRINTK_TIME=y
 EOF
+
+
+# SCSI BLOCK LAYER 4
+cat <<EOF >>.config
+CONFIG_BLK_DEV_BSG=y
+EOF
+
+cat <<EOF >>.config
+# Disk Partitions
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_EFI_PARTITION=y
+CONFIG_LDM_PARTITION=y
+CONFIG_MAC_PARTITION=y
+# Filesystems support
+CONFIG_EXT2_FS=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT4_FS=y
+CONFIG_XFS_FS=m
+CONFIG_AUTOFS4_FS=m
+CONFIG_OVERLAY_FS=y
+CONFIG_FSCACHE=m
+CONFIG_CACHEFILES=m
+CONFIG_FANOTIFY=y
+CONFIG_FUSE_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=y
+CONFIG_NTFS_FS=m
+CONFIG_NTFS_RW=y
+CONFIG_JFFS2_FS=m
+CONFIG_HFS_FS=m
+CONFIG_HFSPLUS_FS=m
+CONFIG_CIFS=m
+CONFIG_CIFS_UPCALL=y
+CONFIG_CIFS_XATTR=y
+CONFIG_CIFS_POSIX=y
+CONFIG_CIFS_ACL=y
+CONFIG_CIFS_DFS_UPCALL=y
+CONFIG_CIFS_SMB2=y
+EOF
+
+
+cat <<EOF >>.config
+# Disk Managers - MD
+CONFIG_MD=y
+# MD AUTODETECT IS DEPRECATED - it works only with metadata=0.90
+CONFIG_MD_AUTODETECT=n
+CONFIG_BLK_DEV_MD=y
+CONFIG_MD_LINEAR=y
+CONFIG_MD_RAID0=y
+CONFIG_MD_RAID1=y
+# Disk Managers - LVM
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_THIN_PROVISIONING=m
+CONFIG_DM_MIRROR=n
+CONFIG_DM_RAID=n
+CONFIG_DM_UEVENT=y
+EOF
+
 
 
 
@@ -178,6 +239,7 @@ CONFIG_RTC_DRV_S35390A=n
 # These are not wifi devices
 CONFIG_NET_VENDOR_3COM=n
 CONFIG_NET_VENDOR_ADAPTEC=n
+CONFIG_NET_VENDOR_AGERE=n
 CONFIG_NET_VENDOR_ALTEON=n
 CONFIG_NET_VENDOR_AMD=n
 CONFIG_NET_VENDOR_ARC=n
@@ -204,8 +266,10 @@ CONFIG_NET_VENDOR_NATSEMI=n
 CONFIG_NET_VENDOR_NVIDIA=n
 CONFIG_NET_VENDOR_OKI=n
 CONFIG_NET_PACKET_ENGINE=n
+CONFIG_NET_VENDOR_QUALCOMM=n
 CONFIG_NET_VENDOR_QLOGIC=n
 CONFIG_NET_VENDOR_REALTEK=n
+CONFIG_NET_VENDOR_ROCKER=n
 CONFIG_NET_VENDOR_RDC=n
 CONFIG_NET_VENDOR_SAMSUNG=n
 CONFIG_NET_VENDOR_SEEQ=n
@@ -218,56 +282,11 @@ CONFIG_NET_VENDOR_TEHUTI=n
 CONFIG_NET_VENDOR_TI=n
 CONFIG_NET_VENDOR_VIA=n
 CONFIG_NET_VENDOR_WIZNET=n
+# USB Network Adapters
+USB_NET_DRIVERS=n
 EOF
 
 
-
-# SCSI BLOCK LAYER 4
-cat <<EOF >>.config
-CONFIG_BLK_DEV_BSG=y
-EOF
-
-cat <<EOF >>.config
-# Disk Partitions
-CONFIG_PARTITION_ADVANCED=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_EFI_PARTITION=y
-CONFIG_LDM_PARTITION=y
-CONFIG_MAC_PARTITION=y
-# Filesystems support
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_EXT4_FS=y
-CONFIG_XFS_FS=m
-CONFIG_FUSE_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=y
-CONFIG_NTFS_FS=m
-CONFIG_NTFS_RW=y
-CONFIG_JFFS2_FS=m
-CONFIG_HFS_FS=m
-CONFIG_HFSPLUS_FS=m
-EOF
-
-
-cat <<EOF >>.config
-# Disk Managers - MD
-CONFIG_MD=y
-# MD AUTODETECT IS DEPRECATED - it works only with metadata=0.90
-CONFIG_MD_AUTODETECT=n
-CONFIG_BLK_DEV_MD=y
-CONFIG_MD_LINEAR=y
-CONFIG_MD_RAID0=y
-CONFIG_MD_RAID1=y
-# Disk Managers - LVM
-CONFIG_BLK_DEV_DM=y
-CONFIG_DM_CRYPT=m
-CONFIG_DM_SNAPSHOT=m
-CONFIG_DM_THIN_PROVISIONING=m
-CONFIG_DM_MIRROR=n
-CONFIG_DM_RAID=n
-CONFIG_DM_UEVENT=y
-EOF
 
 # Further reduce Kernel size
 cat <<EOF >>.config
@@ -275,6 +294,11 @@ cat <<EOF >>.config
 # General setup section
 CONFIG_PROFILING=n
 CONFIG_KPROBES=n
+CONFIG_RD_BZIP2=n
+CONFIG_RD_LZMA=n
+CONFIG_RD_XZ=n
+CONFIG_RD_LZO=n
+CONFIG_RD_LZ4=n
 # Kernel Hacking section
 CONFIG_DEBUG_KERNEL=n
 CONFIG_DEBUG_FS=n
@@ -289,6 +313,15 @@ CONFIG_SECURITY_APPARMOR=n
 EOF
 
 
+
+# Disable WiFi Support 
+cat <<EOF >>.config
+# Disable WiFi Support 
+CONFIG_WLAN=n
+CONFIG_WIRELESS=n
+EOF
+
+
 # OPTIONAL FEATURES BEGIN
 ##############################
 
@@ -299,14 +332,6 @@ CONFIG_L2TP=m
 CONFIG_INET_AH=m
 CONFIG_INET_ESP=m
 EOF
-
-
-cat <<EOF >>.config
-# Example of a WiFi Dongle: DLINK DWL-G122 rev C1 USB
-CONFIG_RT2X00=m
-CONFIG_RT73USB=m
-EOF
-
 
 
 # http://wiki.gentoo.org/wiki/Bluetooth
@@ -350,10 +375,17 @@ CONFIG_BT_ATH3K=m
 # UINPUT for Headsets
 CONFIG_INPUT_MISC=y
 CONFIG_INPUT_UINPUT=m
+# RFKILL
+CONFIG_RFKILL=m
+CONFIG_RFKILL_REGULATOR=m
+CONFIG_RFKILL_GPIO=m
 EOF
+
+
 
 # USB AUDIO SUPPORT
 cat <<EOF >>.config
+# USB AUDIO SUPPORT
 CONFIG_USB_AUDIO=m
 CONFIG_SND_PCM=m
 CONFIG_SND_HWDEP=m
@@ -366,13 +398,6 @@ CONFIG_SND_USB_HIFACE=m
 CONFIG_SND_USB_UA101=m
 CONFIG_SND_VMASTER=y
 EOF
-
-
-grep "CONFIG_BT=m" .config
-if [ $? = 0 ]; then
-  LOCALVERSION=${LOCALVERSION}+bt
-  KERNELSUFFIX=${KERNELSUFFIX}-bt
-fi
 
 
 # USB-VGA from Magic Control Technology (SISUSBVGA)
@@ -390,11 +415,13 @@ CONFIG_FONT_8x16=y
 EOF
 
 
-grep "CONFIG_VGA_ARB=y" .config
-if [ $? = 0 ]; then
-  LOCALVERSION=${LOCALVERSION}+vga
-  KERNELSUFFIX=${KERNELSUFFIX}-vga
-fi
+cat <<EOF >>.config
+# Example of a WiFi Dongle: DLINK DWL-G122 rev C1 USB
+CONFIG_WLAN=y
+WIRELESS=y
+CONFIG_RT2X00=m
+CONFIG_RT73USB=m
+EOF
 
 
 # // OPTIONAL FEATURES END
@@ -437,15 +464,18 @@ if [ $USE_STOCK_UBOOT == "y" ]; then {
 # find current compiled version (Major.Minor)
 cd $KERNELWORKDIR/$KERNELCURRENT
 KERNELVERSION=$(grep -m5 "Linux/arm .* Kernel Configuration" .config | sed 's/.*Linux\/arm \(.*\) Kernel Configuration/\1/g' | cut -d. -f1-3)
+echo $KERNELVERSION
 
 
 # COPY uImage+DTB+modules to RootFS for HDD/USB:
-cp arch/arm/boot/uImage $RFShdd/boot/uImage-v${KERNELVERSION}${KERNELSUFFIX}
-if [ $USE_STOCK_UBOOT == "n" ]; then cp arch/arm/boot/dts/kirkwood-nsa325.dtb $RFShdd/boot/kirkwood-nsa325.dtb; fi
-ln -sf uImage-v${KERNELVERSION}${KERNELSUFFIX} $RFShdd/boot/uImage${UIMAGE_SYMLINK}
+sudo cp arch/arm/boot/uImage $RFShdd/boot/uImage-v${KERNELVERSION}${KERNELSUFFIX}
+if [ $USE_STOCK_UBOOT == "n" ]; then sudo cp arch/arm/boot/dts/kirkwood-nsa325.dtb $RFShdd/boot/kirkwood-nsa325.dtb; fi
+sudo ln -sf uImage-v${KERNELVERSION}${KERNELSUFFIX} $RFShdd/boot/uImage${UIMAGE_SYMLINK}
 make INSTALL_MOD_PATH=$KERNELWORKDIR modules_install
-sudo chown -R root:root $KERNELWORKDIR/lib/modules/*
-sudo cp -a $KERNELWORKDIR/lib/modules/* $RFShdd/lib/modules/
+find $KERNELWORKDIR/lib/modules -maxdepth 2 -name build -type l -delete
+find $KERNELWORKDIR/lib/modules -maxdepth 2 -name source -type l -delete
+sudo chown -R root:root $KERNELWORKDIR/lib/*
+sudo cp -a $KERNELWORKDIR/lib/* $RFShdd/lib/
 
 
 #######################################################################################################################
