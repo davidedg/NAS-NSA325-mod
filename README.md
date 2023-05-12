@@ -6,7 +6,7 @@ A set of mods to completely replace Zyxel NSA-325/v2 NAS box firmware.
 
 Recommended read order:
 
-- Get SERIAL ACCESS: http://zyxel.nas-central.org/wiki/Serial_port_(NSA325)
+- Get SERIAL ACCESS: https://web.archive.org/web/20190406222028/http://zyxel.nas-central.org/wiki/Serial_port_(NSA325)
 
 - Get acquainted with the community work:
 	- http://forum.doozan.com/read.php?2,14351
